@@ -1,0 +1,25 @@
+{
+  "welcome": "Welcome to JEO.H AI",
+  "greeting": "Good {{time}}, dear user!",
+  "modules": {
+    "chat": "Chat AI",
+    "translate": "Translate AI",
+    "predict": "Predict AI",
+    "recommend": "Recommend AI",
+    "health": "Health AI",
+    "content": "Content Creator",
+    "advertising": "Advertising AI",
+    "music": "Music AI",
+    "face": "Face Detection",
+    "image": "Image Classifier",
+    "voice": "Voice Assistant",
+    "progressive": "Progressive AI",
+    "relationship": "Relationship AI"
+  }
+}
+
+
+
+
+
+
