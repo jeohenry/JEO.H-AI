@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import PageWrapper from "../components/PageWrapper";
 import { motion } from "framer-motion";
 import { Mic, MicOff, Camera, CameraOff, Smile } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const LiveVideoChat = ({ userId, peerId }) => {
   const localVideo = useRef(null);
@@ -16,6 +17,7 @@ const LiveVideoChat = ({ userId, peerId }) => {
   const [callDuration, setCallDuration] = useState("00:00");
   const [selectedFilter, setSelectedFilter] = useState("none");
   const ws = useRef(null);
+  const localStreamRef = useRef(null);
 
   useEffect(() => {
     const newPeerConnection = new RTCPeerConnection({
@@ -26,31 +28,43 @@ const LiveVideoChat = ({ userId, peerId }) => {
     ws.current = new WebSocket(`ws://localhost:8000/ws/webrtc/${userId}`);
 
     ws.current.onmessage = async (event) => {
-      const message = JSON.parse(event.data);
+      const m = JSON.parse(event.data);
 
-      switch (message.type) {
+      switch (m.type) {
         case "offer":
-          await newPeerConnection.setRemoteDescription(new RTCSessionDescription(message));
+          await newPeerConnection.setRemoteDescription(new RTCSessionDescription(m));
           const answer = await newPeerConnection.createAnswer();
           await newPeerConnection.setLocalDescription(answer);
-          ws.current.send(JSON.stringify({ type: "answer", ...answer, sender: userId }));
+          ws.current.send(
+            JSON.stringify({ type: "answer", ...answer, sender: userId, target: m.sender })
+          );
           break;
 
         case "answer":
-          await newPeerConnection.setRemoteDescription(new RTCSessionDescription(message));
+          await newPeerConnection.setRemoteDescription(new RTCSessionDescription(m));
           break;
 
         case "candidate":
-          await newPeerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+          await newPeerConnection.addIceCandidate(new RTCIceCandidate(m.candidate));
           break;
 
         case "chat":
-          setMessages((prev) => [...prev, { from: message.sender, text: message.message }]);
+          setMessages((prev) => [...prev, { from: m.sender, text: m.message }]);
           break;
 
         case "typing":
           setIsTyping(true);
           setTimeout(() => setIsTyping(false), 2000);
+          break;
+
+        case "unavailable":
+          toast.error(`❌ User ${m.target} is offline or unreachable`);
+          break;
+
+        case "presence":
+          if (m.online !== undefined) {
+            toast.success(`ℹ️ ${m.target} is ${m.online ? "online" : "offline"}`);
+          }
           break;
 
         default:
@@ -61,7 +75,7 @@ const LiveVideoChat = ({ userId, peerId }) => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       stream.getTracks().forEach((track) => newPeerConnection.addTrack(track, stream));
       localVideo.current.srcObject = stream;
-      localStream = stream;
+      localStreamRef.current = stream;
     });
 
     newPeerConnection.ontrack = (event) => {
@@ -71,7 +85,9 @@ const LiveVideoChat = ({ userId, peerId }) => {
 
     newPeerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        ws.current.send(JSON.stringify({ type: "candidate", candidate: event.candidate, sender: userId }));
+        ws.current.send(
+          JSON.stringify({ type: "candidate", candidate: event.candidate, sender: userId, target: peerId })
+        );
       }
     };
 
@@ -79,7 +95,7 @@ const LiveVideoChat = ({ userId, peerId }) => {
       newPeerConnection.close();
       ws.current.close();
     };
-  }, [userId]);
+  }, [userId, peerId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -96,31 +112,39 @@ const LiveVideoChat = ({ userId, peerId }) => {
   const callPeer = async () => {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    ws.current.send(JSON.stringify({ type: "offer", ...offer, sender: userId }));
+    ws.current.send(
+      JSON.stringify({ type: "offer", ...offer, sender: userId, target: peerId })
+    );
   };
 
   const sendMessage = () => {
     if (newMsg.trim() !== "") {
-      ws.current.send(JSON.stringify({ type: "chat", message: newMsg.trim(), sender: userId }));
+      ws.current.send(
+        JSON.stringify({ type: "chat", message: newMsg.trim(), sender: userId, target: peerId })
+      );
       setMessages((prev) => [...prev, { from: "You", text: newMsg.trim() }]);
       setNewMsg("");
     }
   };
 
   const handleTyping = () => {
-    ws.current.send(JSON.stringify({ type: "typing", sender: userId }));
+    ws.current.send(JSON.stringify({ type: "typing", sender: userId, target: peerId }));
   };
 
   const toggleMic = () => {
-    const track = localVideo.current.srcObject.getAudioTracks()[0];
-    track.enabled = !micOn;
-    setMicOn(!micOn);
+    const track = localStreamRef.current.getAudioTracks()[0];
+    if (track) {
+      track.enabled = !micOn;
+      setMicOn(!micOn);
+    }
   };
 
   const toggleCamera = () => {
-    const track = localVideo.current.srcObject.getVideoTracks()[0];
-    track.enabled = !cameraOn;
-    setCameraOn(!cameraOn);
+    const track = localStreamRef.current.getVideoTracks()[0];
+    if (track) {
+      track.enabled = !cameraOn;
+      setCameraOn(!cameraOn);
+    }
   };
 
   const handleVoiceToText = async () => {
@@ -195,6 +219,27 @@ const LiveVideoChat = ({ userId, peerId }) => {
 export default LiveVideoChat;
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
 
 
 
