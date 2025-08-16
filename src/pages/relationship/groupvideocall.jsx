@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import PageWrapper from "../components/PageWrapper";
 
 const servers = {
@@ -31,7 +31,7 @@ const GroupVideoCall = () => {
 
     ws.current.onmessage = async (event) => {
       const data = JSON.parse(event.data);
-      const { type, from, offer, answer, candidate, chat, typing, join } = data;
+      const { type, from, offer, answer, candidate, chat, typing } = data;
 
       if (typing) {
         setTypingUser(from);
@@ -45,9 +45,14 @@ const GroupVideoCall = () => {
         return;
       }
 
-      if (join) {
+      if (type === "join") {
         setParticipants((prev) => prev + 1);
-        toast(`👤 ${from} joined the call`);
+        toast.success(`👤 A new user joined room ${roomId}`);
+      }
+
+      if (type === "leave") {
+        setParticipants((prev) => Math.max(1, prev - 1));
+        toast(`🚪 Someone left room ${roomId}`);
       }
 
       switch (type) {
@@ -56,7 +61,9 @@ const GroupVideoCall = () => {
           await peers[from].setRemoteDescription(new RTCSessionDescription(offer));
           const ans = await peers[from].createAnswer();
           await peers[from].setLocalDescription(ans);
-          ws.current.send(JSON.stringify({ type: "answer", to: from, answer: ans, from: roomId }));
+          ws.current.send(
+            JSON.stringify({ type: "answer", to: from, answer: ans, from: roomId })
+          );
           break;
 
         case "answer":
@@ -72,7 +79,8 @@ const GroupVideoCall = () => {
       }
     };
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         localStream.current = stream;
         localVideoRef.current.srcObject = stream;
@@ -90,11 +98,15 @@ const GroupVideoCall = () => {
 
   const createPeerConnection = (peerId) => {
     const pc = new RTCPeerConnection(servers);
-    localStream.current.getTracks().forEach((track) => pc.addTrack(track, localStream.current));
+    localStream.current.getTracks().forEach((track) =>
+      pc.addTrack(track, localStream.current)
+    );
 
     pc.onicecandidate = (e) => {
       if (e.candidate) {
-        ws.current.send(JSON.stringify({ type: "candidate", candidate: e.candidate, from: roomId, to: peerId }));
+        ws.current.send(
+          JSON.stringify({ type: "candidate", candidate: e.candidate, from: roomId, to: peerId })
+        );
       }
     };
 
@@ -106,15 +118,13 @@ const GroupVideoCall = () => {
   };
 
   const toggleCamera = () => {
-    const stream = localVideoRef.current.srcObject;
-    const videoTrack = stream.getVideoTracks()[0];
+    const videoTrack = localVideoRef.current.srcObject.getVideoTracks()[0];
     videoTrack.enabled = !cameraOn;
     setCameraOn(!cameraOn);
   };
 
   const toggleMic = () => {
-    const stream = localVideoRef.current.srcObject;
-    const audioTrack = stream.getAudioTracks()[0];
+    const audioTrack = localVideoRef.current.srcObject.getAudioTracks()[0];
     audioTrack.enabled = !micOn;
     setMicOn(!micOn);
   };
@@ -123,6 +133,7 @@ const GroupVideoCall = () => {
     const stream = localVideoRef.current.srcObject;
     stream.getTracks().forEach((track) => track.stop());
     toast("📴 You left the call");
+    ws.current.send(JSON.stringify({ type: "leave", from: roomId }));
     navigate("/");
   };
 
@@ -161,6 +172,7 @@ const GroupVideoCall = () => {
         <p className="text-center text-sm mb-4">👥 Participants: {participants}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Local & Remote Videos */}
           <div>
             <video ref={localVideoRef} autoPlay muted className="w-full max-w-lg rounded shadow" />
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 my-4">
@@ -187,6 +199,7 @@ const GroupVideoCall = () => {
             </div>
           </div>
 
+          {/* Chat Section */}
           <div className="bg-white border p-4 rounded shadow h-[480px] overflow-y-scroll">
             <h3 className="text-lg font-semibold mb-2">💬 Live Chat</h3>
             <div className="space-y-2">
@@ -220,6 +233,33 @@ const GroupVideoCall = () => {
 };
 
 export default GroupVideoCall;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
