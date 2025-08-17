@@ -1,8 +1,10 @@
 import axios from "axios";
 
-// Use environment variable (VITE_ prefix required for Vite)
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+/* ───────── 🌍 BASE URL FROM ENV ───────── */
+// Now points to the proxy server, never exposes real backend
+const BASE_URL = import.meta.env.VITE_PROXY_URL || "http://localhost:3000/api";
 
+/* ───────── 🔗 AXIOS INSTANCE ───────── */
 const API = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -10,18 +12,21 @@ const API = axios.create({
   },
 });
 
-// Optional: Auth token interceptor
-// API.interceptors.request.use((config) => {
-//   const token = localStorage.getItem("token");
-//   if (token) config.headers.Authorization = `Bearer ${token}`;
-//   return config;
-// });
+/* ───────── 🔐 AUTH INTERCEPTOR ───────── */
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-/* ───────── 🔐 AUTH ───────── */
+/* ───────── 🔗 API CALLS ───────── */
+// Auth
 export const registerUser = (data) => API.post("/register", data);
 export const loginUser = (data) => API.post("/login", data);
 
-/* ───────── 👤 PROFILE ───────── */
+// Profile
 export const fetchProfile = (id) => API.get(`/profile/${id}`);
 export const updateProfile = (id, data) => API.put(`/profile/${id}`, data);
 export const uploadPicture = (formData) =>
@@ -29,22 +34,22 @@ export const uploadPicture = (formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-/* ───────── 📝 POSTS ───────── */
+// Posts
 export const createPost = (data) => API.post("/posts/", data);
 export const fetchPosts = () => API.get("/posts/");
 export const likePost = (id) => API.post(`/posts/${id}/like`);
 export const commentPost = (id, data) => API.post(`/posts/${id}/comment`, data);
 export const deletePost = (id) => API.delete(`/posts/${id}`);
 
-/* ───────── 💬 CHAT ───────── */
+// Chat
 export const sendMessage = (data) => API.post("/chat/send", data);
 export const fetchMessages = (chatId) => API.get(`/chat/${chatId}`);
 
-/* ───────── 💘 MATCHMAKER ───────── */
+// Matchmaker
 export const fetchMatches = () => API.get("/matchmaker");
 export const sendSignal = (users) => API.post("/matchmaker/signal", users);
 
-/* ───────── 🧠 PROGRESSIVE AI ───────── */
+// AI
 export const trainAI = (prompt) => API.post("/ai/train", { prompt });
 export const trainManual = (input, output) =>
   API.post("/ai/train/manual", { input, output });
@@ -57,44 +62,44 @@ export const importTrainingFile = (formData) =>
   });
 export const exportTrainingData = () => API.get("/ai/export");
 
-/* ───────── 💌 ADVICE AI ───────── */
+// Advice AI
 export const askAdvice = (question) => API.post("/ai/advice", { question });
 export const analyzeSentiment = (message) =>
   API.post("/ai/sentiment", { message });
 
-/* ───────── 🏥 HEALTH AI ───────── */
+// Health AI
 export const diagnose = (symptoms) =>
   API.post("/health/diagnose", { symptoms });
 export const prescribe = (diagnosis) =>
   API.post("/health/prescribe", { diagnosis });
 
-/* ───────── 🌐 TRANSLATOR ───────── */
+// Translator
 export const translateText = (text, toLang) =>
   API.post("/translate", { text, to_language: toLang });
 
-/* ───────── 🧑‍💻 FACE DETECTION ───────── */
+// Face Detection
 export const detectFace = (formData) =>
   API.post("/face/detect", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-/* ───────── 🖼️ IMAGE CLASSIFICATION ───────── */
+// Image Classification
 export const classifyImage = (formData) =>
   API.post("/image/classify", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-/* ───────── 🔊 VOICE ASSISTANT ───────── */
+// Voice Assistant
 export const processVoice = (formData) =>
   API.post("/voice/process", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
-/* ───────── ✍️ CONTENT CREATION ───────── */
+// Content Creation
 export const generateContent = (data) =>
   API.post("/content/generate", data);
 
-/* ───────── 🎵 MUSIC AI ───────── */
+// Music AI
 export const generateMusic = (input) =>
   API.post("/music/generate", { input });
 export const uploadAudio = (formData) =>
@@ -102,18 +107,30 @@ export const uploadAudio = (formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+// Flagging
 export const flagContent = (payload) => API.post("/flag", payload);
 export const getAllFlags = () => API.get("/flag/all");
 
-export const fetchAnalyticsSummary = () => API.get("/api/relationship/admin/analytics/summary");
-export const fetchGlobalAnalytics = () => API.get("/api/admin/analytics/summary");
+// Analytics
+export const fetchAnalyticsSummary = () =>
+  API.get("/relationship/admin/analytics/summary");
+export const fetchGlobalAnalytics = () => API.get("/admin/analytics/summary");
 
-
-axios.post("http://localhost:8000/utils/generate-translations")
-  .then(res => console.log(res.data))
-  .catch(err => console.error(err));
 /* ───────── 🌍 EXPORT AXIOS ───────── */
 export default API;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
