@@ -10,12 +10,14 @@ export default function Profile() {
   const [newBio, setNewBio] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [translateEnabled, setTranslateEnabled] = useState(true);
-  const [voiceId, setVoiceId] = useState("Rachel");
+  const [voiceId, setVoiceId] = useState("");
+  const [voices, setVoices] = useState([]);
   const [language, setLanguage] = useState("en");
 
   const navigate = useNavigate();
   const userId = localStorage.getItem("user_id");
 
+  /* ───────── Load User ───────── */
   useEffect(() => {
     if (!userId) return navigate("/relationship/login");
 
@@ -24,10 +26,18 @@ export default function Profile() {
       setUser(userData);
       setNewBio(userData.bio || "");
       setTranslateEnabled(userData.translate_enabled);
-      setVoiceId(userData.voice_id || "Rachel");
+      setVoiceId(userData.voice_id || "");
       setLanguage(userData.language || "en");
     });
   }, [userId]);
+
+  /* ───────── Load Voices ───────── */
+  useEffect(() => {
+    axios
+      .get("/api/voices/")
+      .then((res) => setVoices(res.data.voices || []))
+      .catch((err) => console.error("Failed to fetch voices", err));
+  }, []);
 
   const handleBioUpdate = () => {
     axios.put(`/api/relationship/user/${userId}/bio`, { bio: newBio }).then(() => {
@@ -84,9 +94,12 @@ export default function Profile() {
                 onChange={(e) => setVoiceId(e.target.value)}
                 className="w-full border p-2 rounded"
               >
-                <option value="Rachel">Rachel</option>
-                <option value="Bella">Bella</option>
-                <option value="Adam">Adam</option>
+                <option value="">-- Select a Voice --</option>
+                {voices.map((v) => (
+                  <option key={v.voice_id} value={v.voice_id}>
+                    {v.name} ({v.category})
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -205,6 +218,16 @@ export default function Profile() {
     </PageWrapper>
   );
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
