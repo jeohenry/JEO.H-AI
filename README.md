@@ -1,4 +1,4 @@
-# JEO.H AI Frontend
+# JEO.H AI
 
 ![JEO.H AI Banner](./public/logo.png) <!-- Replace with actual logo/banner -->
 
@@ -16,7 +16,7 @@
 ---
 
 ## 📖 Overview
-**JEO.H AI Frontend** is a modular **React + Vite** powered user interface for the **JEO.H AI System**.  
+**JEO.H AI ** is a modular **React + Vite** powered user interface for the **JEO.H AI System**.  
 It integrates multiple **AI-driven modules** — Chat, Voice Assistant, Music AI, Health AI, Matchmaking/Relationship AI, Content Creation, Image Classification, Face Detection, Translation, Predictive Analytics, and Advertising — all within a **single, scalable platform**.
 
 This project connects seamlessly with the **FastAPI/Flask backend** and supports **both offline (LLaMA)** and **online (OpenRouter)** AI switching.
