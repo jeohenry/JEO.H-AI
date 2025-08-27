@@ -10,6 +10,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'), // allows @/components, @/modules, etc.
     },
   },
+  base: './', // ensures assets are resolved correctly (Cloudflare, GitHub Pages, etc.)
   server: {
     port: 5173, // optional: you can change this
   },
