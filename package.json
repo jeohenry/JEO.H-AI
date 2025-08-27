@@ -2,6 +2,7 @@
   "name": "jeo-h-ai",
   "version": "1.0.0",
   "private": true,
+  "homepage": ".",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -26,11 +27,3 @@
     "vite": "^4.5.0"
   }
 }
-
-
-
-
-
-
-
-
