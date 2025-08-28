@@ -1,9 +1,9 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes } from 'react-router-dom';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
-import App from './App';
-import './index.css'; // Tailwind CSS
+import App from "./App.jsx"; // explicitly using .jsx
+import "./index.css";
 
 // Error boundary component
 class ErrorOverlay extends React.Component {
@@ -48,17 +48,14 @@ class ErrorOverlay extends React.Component {
   }
 }
 
-// Create root for React 18+
-const root = ReactDOM.createRoot(document.getElementById('root'));
-
-root.render(
-  <React.StrictMode>
-    <ErrorOverlay>
-      <ThemeProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ThemeProvider>
-    </ErrorOverlay>
-  </React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <ErrorOverlay>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/*" element={<App />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
+  </ErrorOverlay>
 );
