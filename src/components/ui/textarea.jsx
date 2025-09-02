@@ -1,25 +1,33 @@
-import React from 'react';
-import classNames from 'classnames';
+// components/ui/Textarea.tsx
+"use client";
+
+import { Textarea as ShadcnTextarea } from "@/components/ui/textarea";
+
+interface TextareaProps {
+  name?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  rows?: number;
+  className?: string;
+}
 
 export const Textarea = ({
   name,
   value,
   onChange,
-  placeholder = '',
+  placeholder,
   rows = 4,
-  className = ''
-}) => {
+  className,
+}: TextareaProps) => {
   return (
-    <textarea
+    <ShadcnTextarea
       name={name}
-      rows={rows}
       value={value}
-      placeholder={placeholder}
       onChange={onChange}
-      className={classNames(
-        'w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white dark:border-gray-600 transition-all resize-none',
-        className
-      )}
+      placeholder={placeholder}
+      rows={rows}
+      className={className}
     />
   );
 };
