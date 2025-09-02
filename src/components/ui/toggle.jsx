@@ -1,17 +1,28 @@
-import React from 'react';
+"use client";
 
-export const Toggle = ({ checked, onChange }) => {
+import { Switch } from "@/components/ui/switch";
+
+interface ToggleProps {
+  checked: boolean;
+  onChange: (event: { target: { checked: boolean } }) => void;
+  id?: string;
+  label?: string;
+}
+
+export const Toggle = ({ checked, onChange, id, label }: ToggleProps) => {
+  // Adapter: convert onCheckedChange (boolean) → onChange (event-like)
+  const handleChange = (value: boolean) => {
+    onChange({ target: { checked: value } });
+  };
+
   return (
-    <label className="inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="sr-only peer"
-      />
-      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:bg-indigo-600 relative transition-all">
-        <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full peer-checked:translate-x-5 transition-transform" />
-      </div>
-    </label>
+    <div className="flex items-center space-x-2">
+      <Switch id={id} checked={checked} onCheckedChange={handleChange} />
+      {label && (
+        <label htmlFor={id} className="text-sm font-medium">
+          {label}
+        </label>
+      )}
+    </div>
   );
 };
