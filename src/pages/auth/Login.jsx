@@ -14,7 +14,7 @@ const Login = () => {
     try {
       const res = await axios.post("/api/login", { email, password });
       localStorage.setItem("user_id", res.data.user_id);
-      navigate("/relationship/feed");
+      navigate("/relationship/Feed");
     } catch (err) {
       setError("Invalid email or password");
     }
