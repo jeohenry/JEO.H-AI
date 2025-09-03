@@ -1,4 +1,4 @@
-# src/modules/ChatModule.jsx
+// src/modules/ChatModule.jsx
 
 import React, { useState } from 'react';
 import PageWrapper from '@/components/PageWrapper';
