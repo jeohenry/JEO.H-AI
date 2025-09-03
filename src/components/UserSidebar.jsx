@@ -32,7 +32,7 @@ const UserSidebar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/relationship/login";
+    window.location.href = "/relationship/Login";
   };
 
   const user = {
@@ -46,22 +46,22 @@ const UserSidebar = () => {
   }, []);
 
   const coreLinks = [
-    { to: "/relationship/home", label: "Home", icon: <FaHome /> },
-    { to: "/relationship/profile", label: "Profile", icon: <FaUser /> },
-    { to: "/relationship/feed", label: "Feed", icon: <FaHeart /> },
-    { to: "/relationship/chatroom", label: "Chat", icon: <FaComments /> },
+    { to: "/relationship/Home", label: "Home", icon: <FaHome /> },
+    { to: "/relationship/Profile", label: "Profile", icon: <FaUser /> },
+    { to: "/relationship/Feed", label: "Feed", icon: <FaHeart /> },
+    { to: "/relationship/Chatroom", label: "Chat", icon: <FaComments /> },
   ];
 
   const toolLinks = [
-    { to: "/relationship/matchmaker", label: "Matchmaker", icon: <FaHeart /> },
-    { to: "/relationship/advice", label: "Advice", icon: <FaComments /> },
-    { to: "/relationship/translate", label: "Translate", icon: <Languages size={18} /> },
+    { to: "/relationship/Matchmaker", label: "Matchmaker", icon: <FaHeart /> },
+    { to: "/relationship/Advice", label: "Advice", icon: <FaComments /> },
+    { to: "/relationship/Translate", label: "Translate", icon: <Languages size={18} /> },
   ];
 
   const liveLinks = [
-    { to: "/relationship/group-video-call", label: "Group Call", icon: <FaComments /> },
-    { to: "/relationship/live-video-chat", label: "Live Chat", icon: <FaComments /> },
-    { to: "/relationship/notifications", label: "Notifications", icon: <FaComments /> },
+    { to: "/relationship/Group-Video-Call", label: "Group Call", icon: <FaComments /> },
+    { to: "/relationship/Live-Video-Chat", label: "Live Chat", icon: <FaComments /> },
+    { to: "/relationship/Notifications", label: "Notifications", icon: <FaComments /> },
   ];
 
   const toggleCategory = (category) => {
