@@ -1,3 +1,5 @@
+# src/modules/ChatModule.jsx
+
 import React, { useState } from 'react';
 import PageWrapper from '@/components/PageWrapper';
 import { Card, CardContent } from '@/components/ui/card';
