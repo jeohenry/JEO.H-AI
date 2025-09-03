@@ -1,3 +1,5 @@
+//src/pages/HealthAI.tsx
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
