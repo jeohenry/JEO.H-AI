@@ -1,4 +1,4 @@
-// src/pages/GroupVideoCall.jsx
+// src/pages/relationship/GroupVideoCall.jsx
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
