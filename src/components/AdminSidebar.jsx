@@ -45,7 +45,7 @@ const AdminSidebar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-    navigate("/relationship/login");
+    navigate("/relationship/Login");
   };
 
   const renderLink = (to, label, icon) => (
