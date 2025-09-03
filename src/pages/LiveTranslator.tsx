@@ -1,3 +1,5 @@
+//src/pages/LiveTranslator.tsx
+
 import React, { useState, useEffect, useRef } from "react";
 import axios from "../../utils/API";
 import { Button } from "@/components/ui/button";
