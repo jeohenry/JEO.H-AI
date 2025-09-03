@@ -1,4 +1,4 @@
-// AdminGlobalAnalytics.jsx - Now with real-time heatmap chart + websocket updates
+// src/pages/admin/AdminGlobalAnalytics.jsx
 
 import React, { useEffect, useState, useRef } from "react";
 import { fetchGlobalAnalytics } from "../../api/AdminGlobalAPI";
