@@ -1,4 +1,4 @@
-// src/pages/relationship/LanguageSelector.jsx
+// src/pages/auth/LanguageSelector.jsx
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
