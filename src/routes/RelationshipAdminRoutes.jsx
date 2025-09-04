@@ -1,21 +1,70 @@
-//src/routes/RelationshipAdminRoutes.jsx
+// src/routes/RelationshipAdminRoutes.jsx
 
 import React from "react";
 import { Route } from "react-router-dom";
 import PageWrapper from "@/components/PageWrapper";
 import { slideUp, scaleFade } from "@/config/animations";
 
-import AdminDashboard from "@/pages/Admin/AdminDashboard";
-import AdminGlobalAnalytics from "@/pages/Admin/AdminGlobalAnalytics";
-import AdminAnalytics from "@/pages/Admin/AdminAnalytics";
-import MergedFlaggedReports from "@/pages/Admin/MergedFlaggedReports";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminGlobalAnalytics from "@/pages/admin/AdminGlobalAnalytics";
+import AdminAnalytics from "@/pages/admin/AdminAnalytics";
+import MergedFlaggedReports from "@/pages/admin/MergedFlaggedReports";
+import AdminLogin from "@/pages/admin/AdminLogin";
+import ProtectedAdminRoute from "@/routes/ProtectedAdminRoute";
 
 const AdminRoutes = () => (
   <>
-    <Route path="admin-dashboard" element={<PageWrapper animation={slideUp}><AdminDashboard /></PageWrapper>} />
-    <Route path="admin/jeoh-analytics" element={<PageWrapper animation={scaleFade}><AdminGlobalAnalytics /></PageWrapper>} />
-    <Route path="admin/analytics" element={<PageWrapper animation={scaleFade}><AdminAnalytics /></PageWrapper>} />
-    <Route path="admin/flags" element={<PageWrapper animation={slideUp}><MergedFlaggedReports /></PageWrapper>} />
+    {/* Public login route */}
+    <Route
+      path="admin/login"
+      element={
+        <PageWrapper animation={scaleFade}>
+          <AdminLogin />
+        </PageWrapper>
+      }
+    />
+
+    {/* Protected admin routes */}
+    <Route
+      path="admin/dashboard"
+      element={
+        <ProtectedAdminRoute>
+          <PageWrapper animation={slideUp}>
+            <AdminDashboard />
+          </PageWrapper>
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="admin/global-analytics"
+      element={
+        <ProtectedAdminRoute>
+          <PageWrapper animation={scaleFade}>
+            <AdminGlobalAnalytics />
+          </PageWrapper>
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="admin/analytics"
+      element={
+        <ProtectedAdminRoute>
+          <PageWrapper animation={scaleFade}>
+            <AdminAnalytics />
+          </PageWrapper>
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="admin/flags"
+      element={
+        <ProtectedAdminRoute>
+          <PageWrapper animation={slideUp}>
+            <MergedFlaggedReports />
+          </PageWrapper>
+        </ProtectedAdminRoute>
+      }
+    />
   </>
 );
 
