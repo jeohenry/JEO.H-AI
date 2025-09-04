@@ -15,7 +15,6 @@ import {
 } from "react-icons/fa";
 import { Languages } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
-import "./Sidebar.css";
 
 const UserSidebar = () => {
   const [isOpen, setIsOpen] = useState(window.innerWidth > 768);
