@@ -1,4 +1,4 @@
-//src/pages/HealthAI.tsx
+//src/modules/HealthAI.tsx
 
 import React, { useState } from 'react';
 import axios from 'axios';
