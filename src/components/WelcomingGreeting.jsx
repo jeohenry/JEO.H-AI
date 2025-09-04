@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { detectLanguage } from "@/utils/langDetector";
-import { playGreetingVoice } from "@/utils/voice";
+import { playGreetingVoice } from "@/services/voice";
 
 const WelcomeGreeting = ({ message = "Welcome to JEO.H AI" }) => {
   useEffect(() => {
