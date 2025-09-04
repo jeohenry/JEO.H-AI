@@ -15,9 +15,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
-import { useTheme } from "../../context/ThemeContext";
-import axios from "../../utils/API";
-import { defaultPageTransition } from "../../config/animations";
+import { useTheme } from "@/context/ThemeContext";
+import axios from "@/api";
+import { defaultPageTransition } from "@/config/animations";
 
 const RelationshipLayout = () => {
   const navigate = useNavigate();
