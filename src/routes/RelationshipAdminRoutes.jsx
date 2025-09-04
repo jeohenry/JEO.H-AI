@@ -12,26 +12,17 @@ import MergedFlaggedReports from "@/pages/admin/MergedFlaggedReports";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import ProtectedAdminRoute from "@/routes/ProtectedAdminRoute";
 
-const AdminRoutes = () => (
+const RelationshipAdminRoutes = () => (
   <>
-    {/* Public login route */}
-    <Route
-      path="admin/login"
-      element={
-        <PageWrapper animation={scaleFade}>
-          <AdminLogin />
-        </PageWrapper>
-      }
-    />
+    {/* Public Admin Login */}
+    <Route path="admin/login" element={<PageWrapper animation={scaleFade}><AdminLogin /></PageWrapper>} />
 
-    {/* Protected admin routes */}
+    {/* Protected Admin Routes */}
     <Route
       path="admin/dashboard"
       element={
         <ProtectedAdminRoute>
-          <PageWrapper animation={slideUp}>
-            <AdminDashboard />
-          </PageWrapper>
+          <PageWrapper animation={slideUp}><AdminDashboard /></PageWrapper>
         </ProtectedAdminRoute>
       }
     />
@@ -39,9 +30,7 @@ const AdminRoutes = () => (
       path="admin/global-analytics"
       element={
         <ProtectedAdminRoute>
-          <PageWrapper animation={scaleFade}>
-            <AdminGlobalAnalytics />
-          </PageWrapper>
+          <PageWrapper animation={scaleFade}><AdminGlobalAnalytics /></PageWrapper>
         </ProtectedAdminRoute>
       }
     />
@@ -49,9 +38,7 @@ const AdminRoutes = () => (
       path="admin/analytics"
       element={
         <ProtectedAdminRoute>
-          <PageWrapper animation={scaleFade}>
-            <AdminAnalytics />
-          </PageWrapper>
+          <PageWrapper animation={scaleFade}><AdminAnalytics /></PageWrapper>
         </ProtectedAdminRoute>
       }
     />
@@ -59,13 +46,11 @@ const AdminRoutes = () => (
       path="admin/flags"
       element={
         <ProtectedAdminRoute>
-          <PageWrapper animation={slideUp}>
-            <MergedFlaggedReports />
-          </PageWrapper>
+          <PageWrapper animation={slideUp}><MergedFlaggedReports /></PageWrapper>
         </ProtectedAdminRoute>
       }
     />
   </>
 );
 
-export default AdminRoutes;
+export default RelationshipAdminRoutes;
