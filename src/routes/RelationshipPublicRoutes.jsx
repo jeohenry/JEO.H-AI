@@ -11,9 +11,6 @@ import Register from "@/pages/Auth/Register";
 import PasswordReset from "@/pages/Auth/PasswordReset";
 import LanguageSelector from "@/pages/Auth/LanguageSelector";
 
-// Posts
-import TranslatedPost from "@/pages/post/TranslatedPost";
-
 const PublicRoutes = () => (
   <>
     {/* Language selection entry point */}
@@ -48,16 +45,6 @@ const PublicRoutes = () => (
       element={
         <PageWrapper animation={slideRight}>
           <PasswordReset />
-        </PageWrapper>
-      }
-    />
-
-    {/* Translated post */}
-    <Route
-      path="post/:id/translated"
-      element={
-        <PageWrapper animation={scaleFade}>
-          <TranslatedPost />
         </PageWrapper>
       }
     />
