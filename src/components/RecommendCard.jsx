@@ -1,3 +1,5 @@
+//src/components/RecommendCard.jsx
+
 import React from 'react';
 
 const RecommendCard = ({ content, index }) => (
