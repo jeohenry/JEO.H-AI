@@ -1,4 +1,4 @@
-// components/ui/FileUpload.tsx
+// src/components/ui/FileUpload.tsx
 "use client";
 
 import { useState, DragEvent } from "react";
