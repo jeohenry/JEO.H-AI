@@ -1,3 +1,5 @@
+// src/components/music/ThemeSwitcher.tsx
+
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 
