@@ -1,4 +1,4 @@
-// components/ChatBox.jsx
+// src/components/ChatBox.jsx
 import React, { useState } from "react";
 
 const ChatBox = ({ messages, onSend }) => {
