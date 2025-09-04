@@ -1,38 +1,54 @@
-const CACHE_NAME = "jeoh-ai-cache-v1";
+const CACHE_NAME = "jeoh-ai-cache-v2"; // bump version to refresh cache
 
-const ASSETS_TO_CACHE = [
-  "/",                  // root
-  "/index.html",        // main entry
-  "/manifest.json",     // PWA manifest
-  "/favicon.ico",       // favicon
+const STATIC_ASSETS = [
+  "/manifest.json",
+  "/favicon.ico",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
-  "/icons/maskable-icon.png"
+  "/icons/maskable-icon.png",
 ];
 
-// Install and cache assets
+// Install: cache static assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting(); // activate immediately
 });
 
-// Fetch from cache first, fallback to network
+// Fetch: different strategies for HTML vs. other assets
 self.addEventListener("fetch", (event) => {
+  const req = event.request;
+
+  // Always try network first for HTML (prevents stale index.html)
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req).catch(() => caches.match("/index.html")) // offline fallback
+    );
+    return;
+  }
+
+  // For static assets: cache-first
+  if (STATIC_ASSETS.some((asset) => req.url.includes(asset))) {
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req))
+    );
+    return;
+  }
+
+  // Default: try network, fallback to cache (stale-while-revalidate style)
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request).catch(() =>
-        caches.match("/index.html") // fallback offline to homepage
-      );
-    })
+    fetch(req)
+      .then((res) => {
+        const clone = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+        return res;
+      })
+      .catch(() => caches.match(req))
   );
 });
 
-// Activate and clean old caches
+// Activate: clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
