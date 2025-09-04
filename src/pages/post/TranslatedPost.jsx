@@ -1,11 +1,11 @@
-//src/pages/post/TranslatedPost.jsx
+// src/pages/post/TranslatedPost.jsx
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "./api";
-import PageWrapper from "../components/PageWrapper";
+import axios from "@/api"; // ✅ fixed import
+import PageWrapper from "@/components/PageWrapper"; // ✅ fixed import
 import { motion } from "framer-motion";
-import { fadeIn, slideUp } from "../config/Animations";
+import { fadeIn, slideUp } from "@/config/animations"; // ✅ fixed import
 
 const TranslatedPost = () => {
   const { id } = useParams();
@@ -27,7 +27,9 @@ const TranslatedPost = () => {
           exit="exit"
           variants={fadeIn}
         >
-          <p className="text-gray-500 animate-pulse">🔄 Loading translated post...</p>
+          <p className="text-gray-500 animate-pulse">
+            🔄 Loading translated post...
+          </p>
         </motion.div>
       </PageWrapper>
     );
@@ -74,16 +76,3 @@ const TranslatedPost = () => {
 };
 
 export default TranslatedPost;
-
-
-
-
-
-
-
-
-
-
-
-
-
