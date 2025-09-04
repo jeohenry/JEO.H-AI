@@ -15,8 +15,8 @@ import Advice from "@/pages/relationship/Advice";
 import GroupVideoCall from "@/pages/relationship/GroupVideoCall";
 import LiveVideo from "@/pages/relationship/LiveVideochat";
 import Notifications from "@/pages/Notifications";
-import UploadPicture from "@/pages/relationship/UploadPicture";
-import LiveTranslatorTabs from "@/modules/relationship/LiveTranslatorTabs";
+import UploadPicture from "@/pages/relationship/Upload";
+import LiveTranslatorTabs from "@/modules/LiveTranslatorTabs";
 
 const UserRoutes = () => (
   <>
