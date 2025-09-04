@@ -1,4 +1,4 @@
-// src/hooks/useWebRTCChat.js
+// src/hooks/UseWebRTCChat.js
 import { useEffect, useRef, useState } from "react";
 
 export const useWebRTCChat = (userId) => {
