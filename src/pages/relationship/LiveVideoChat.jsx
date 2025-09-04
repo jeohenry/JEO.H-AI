@@ -88,17 +88,21 @@ const LiveVideoChat = ({ userId, peerId }) => {
 
       // Recording socket
       recordWS.current = new WebSocket(`ws://localhost:8000/ws/record/private/${userId}`);
-      recordWS.current.onopen = () => {
-        const recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp8" });
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0 && recordWS.current.readyState === WebSocket.OPEN) {
-            e.data.arrayBuffer().then((buf) => recordWS.current.send(buf));
-          }
-        };
-        recorder.start(1000); // 1s chunks
-        recorderRef.current = recorder;
-      };
-    });
+recordWS.current.onopen = () => {
+  toast.success("🎥 Recording started", { id: "recording" });
+
+  const recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp8" });
+  recorder.ondataavailable = (e) => {
+    if (e.data.size > 0 && recordWS.current.readyState === WebSocket.OPEN) {
+      e.data.arrayBuffer().then((buf) => recordWS.current.send(buf));
+    }
+  };
+  recorder.start(1000); // 1s chunks
+  recorderRef.current = recorder;
+};
+recordWS.current.onclose = () => {
+  toast.error("⚠️ Recording connection closed unexpectedly", { id: "recording" });
+};
 
     // --- Remote stream ---
     newPeerConnection.ontrack = (event) => {
@@ -117,13 +121,14 @@ const LiveVideoChat = ({ userId, peerId }) => {
 
     // Cleanup
     return () => {
-      newPeerConnection.close();
-      ws.current?.close();
-      recordWS.current?.close();
-      recorderRef.current?.stop();
-    };
-  }, [userId, peerId]);
-
+  newPeerConnection.close();
+  ws.current?.close();
+  recordWS.current?.close();
+  if (recorderRef.current) {
+    recorderRef.current.stop();
+    toast.success("💾 Recording saved", { id: "recording" });
+  }
+};
   // Call duration timer
   useEffect(() => {
     const interval = setInterval(() => {
