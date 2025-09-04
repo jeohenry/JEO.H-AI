@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
-import PageWrapper from "@/components/PageWrapper";
+import PageWrapper from "../components/PageWrapper";
 
 const servers = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
