@@ -1,4 +1,4 @@
-// src/config/animations.js
+// src/config/Animations.js
 export const pageFade = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
