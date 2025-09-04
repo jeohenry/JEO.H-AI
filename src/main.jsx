@@ -1,5 +1,3 @@
-//src/main.jsx
-
 import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -22,3 +20,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </I18nextProvider>
   </React.StrictMode>
 );
+
+/* ───────── 🔹 Service Worker Registration ───────── */
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((reg) => {
+        console.log("✅ Service Worker registered:", reg.scope);
+      })
+      .catch((err) => {
+        console.error("❌ Service Worker registration failed:", err);
+      });
+  });
+}
