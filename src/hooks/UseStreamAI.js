@@ -1,4 +1,4 @@
-// src/hooks/useStreamAI.js
+// src/hooks/UseStreamAI.js
 import { useState, useRef, useCallback } from "react";
 
 const DEFAULT_STREAM_ENDPOINT = "http://localhost:8000/stream-jeoh";
