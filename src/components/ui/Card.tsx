@@ -1,4 +1,4 @@
-// components/ui/Card.tsx
+// src/components/ui/Card.tsx
 "use client";
 
 import {
