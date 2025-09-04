@@ -1,3 +1,5 @@
+//src/api.js
+
 import axios from "axios";
 
 /* ───────── 🌍 BASE URL FROM ENV ───────── */
