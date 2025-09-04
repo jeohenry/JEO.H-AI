@@ -1,4 +1,4 @@
-//src/pages/LiveTranslator.tsx
+//src/modules/LiveTranslator.tsx
 
 import React, { useState, useEffect, useRef } from "react";
 import axios from "../../utils/API";
