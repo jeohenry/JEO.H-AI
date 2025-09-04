@@ -1,3 +1,5 @@
+//src/routes/RelationshipRoutes.jsx
+
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import RelationshipLayout from "@/layouts/RelationshipLayout";
