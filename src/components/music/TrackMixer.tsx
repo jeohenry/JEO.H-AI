@@ -1,3 +1,5 @@
+//src/components/music/TrackMixer.tsx
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
