@@ -1,4 +1,4 @@
-// src/components/Sidebar/AdminSidebar.jsx
+// src/components/AdminSidebar.jsx
 
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
