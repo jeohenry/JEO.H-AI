@@ -1,8 +1,8 @@
 //src/components/SidebarWrapper.jsx
 
 import React from "react";
-import AdminSidebar from "./AdminSidebar";
-import UserSidebar from "./UserSidebar";
+import AdminSidebar from "@/components/AdminSidebar";
+import UserSidebar from "@/components/UserSidebar";
 
 const SidebarWrapper = () => {
   const role = localStorage.getItem("role");
