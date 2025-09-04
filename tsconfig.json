@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "~/*": ["src/*"],
+      "src/*": ["src/*"]
+    },
+    "jsx": "react-jsx",          // required for React 17+
+    "allowJs": true,             // ✅ allow plain JS alongside TS
+    "checkJs": false,            // don’t force type-checking .js files
+    "resolveJsonModule": true,   // ✅ allow importing .json files
+    "esModuleInterop": true,     
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "module": "ESNext"
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json"
+  ]
+}
