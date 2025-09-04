@@ -1,4 +1,4 @@
-//src/pages/Recommend.jsx
+//src/modules/Recommend.jsx
 
 import React, { useState } from "react";
 import axios from "axios";
