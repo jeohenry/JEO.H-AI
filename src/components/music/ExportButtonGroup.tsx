@@ -1,4 +1,4 @@
-// /src/components/music/ExportButtonGroup.tsx
+// src/components/music/ExportButtonGroup.tsx
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Download, FileText, FileAudio2 } from "lucide-react";
