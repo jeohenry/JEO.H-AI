@@ -1,10 +1,11 @@
-//src/pages/relationship/LiveVideoChat.jsx 
+// src/pages/relationship/LiveVideoChat.jsx
 
 import React, { useRef, useEffect, useState } from "react";
 import PageWrapper from "../components/PageWrapper";
 import { motion } from "framer-motion";
-import { Mic, MicOff, Camera, CameraOff, Smile } from "lucide-react";
+import { Mic, MicOff, Camera, CameraOff, Smile, Download } from "lucide-react";
 import { toast } from "react-hot-toast";
+
 const LiveVideoChat = ({ userId, peerId }) => {
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
@@ -18,6 +19,8 @@ const LiveVideoChat = ({ userId, peerId }) => {
   const [callDuration, setCallDuration] = useState("00:00");
   const [selectedFilter, setSelectedFilter] = useState("none");
   const ws = useRef(null);
+  const recordWS = useRef(null);
+  const recorderRef = useRef(null);
   const localStreamRef = useRef(null);
 
   useEffect(() => {
@@ -26,6 +29,7 @@ const LiveVideoChat = ({ userId, peerId }) => {
     });
     setPc(newPeerConnection);
 
+    // --- Signaling WS ---
     ws.current = new WebSocket(`ws://localhost:8000/ws/webrtc/${userId}`);
 
     ws.current.onmessage = async (event) => {
@@ -73,17 +77,36 @@ const LiveVideoChat = ({ userId, peerId }) => {
       }
     };
 
+    // --- Local stream + recording ---
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-      stream.getTracks().forEach((track) => newPeerConnection.addTrack(track, stream));
+      // Attach to local video
       localVideo.current.srcObject = stream;
       localStreamRef.current = stream;
+
+      // Add tracks to WebRTC
+      stream.getTracks().forEach((track) => newPeerConnection.addTrack(track, stream));
+
+      // Recording socket
+      recordWS.current = new WebSocket(`ws://localhost:8000/ws/record/private/${userId}`);
+      recordWS.current.onopen = () => {
+        const recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp8" });
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0 && recordWS.current.readyState === WebSocket.OPEN) {
+            e.data.arrayBuffer().then((buf) => recordWS.current.send(buf));
+          }
+        };
+        recorder.start(1000); // 1s chunks
+        recorderRef.current = recorder;
+      };
     });
 
+    // --- Remote stream ---
     newPeerConnection.ontrack = (event) => {
       remoteVideo.current.srcObject = event.streams[0];
       setStartTime(Date.now());
     };
 
+    // --- ICE candidates ---
     newPeerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         ws.current.send(
@@ -92,12 +115,16 @@ const LiveVideoChat = ({ userId, peerId }) => {
       }
     };
 
+    // Cleanup
     return () => {
       newPeerConnection.close();
-      ws.current.close();
+      ws.current?.close();
+      recordWS.current?.close();
+      recorderRef.current?.stop();
     };
   }, [userId, peerId]);
 
+  // Call duration timer
   useEffect(() => {
     const interval = setInterval(() => {
       if (startTime) {
@@ -152,6 +179,25 @@ const LiveVideoChat = ({ userId, peerId }) => {
     alert("🎤 Voice-to-text feature will transcribe soon...");
   };
 
+  const downloadRecording = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/private/download/${userId}`);
+      if (!res.ok) throw new Error("Download failed");
+      const data = await res.json();
+      if (data.download_url) {
+        const a = document.createElement("a");
+        a.href = data.download_url;
+        a.download = `private_call_${userId}.webm`;
+        a.click();
+        toast.success("📥 Recording downloaded!");
+      } else {
+        toast.error("❌ No recording available yet.");
+      }
+    } catch (err) {
+      toast.error("⚠️ Failed to download recording");
+    }
+  };
+
   return (
     <PageWrapper>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 grid gap-4 md:grid-cols-2 grid-cols-1">
@@ -164,6 +210,9 @@ const LiveVideoChat = ({ userId, peerId }) => {
           <div className="flex gap-2">
             <button onClick={toggleMic} className="bg-gray-800 p-2 text-white rounded">{micOn ? <Mic /> : <MicOff />}</button>
             <button onClick={toggleCamera} className="bg-gray-800 p-2 text-white rounded">{cameraOn ? <Camera /> : <CameraOff />}</button>
+            <button onClick={downloadRecording} className="bg-purple-600 p-2 text-white rounded flex items-center gap-1">
+              <Download size={16} /> Download
+            </button>
           </div>
           <select
             value={selectedFilter}
@@ -218,40 +267,3 @@ const LiveVideoChat = ({ userId, peerId }) => {
 };
 
 export default LiveVideoChat;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
