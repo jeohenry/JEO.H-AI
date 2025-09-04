@@ -20,7 +20,7 @@ import {
   FaMoon,
 } from "react-icons/fa";
 import { useTheme } from "../context/ThemeContext";
-import LanguageSwitcher from "./LanguageSwitcher";
+import LanguageSwitcher from ".@/components/LanguageSwitcher";
 
 
 const NavBar = () => {
