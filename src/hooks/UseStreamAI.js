@@ -1,7 +1,9 @@
 // src/hooks/UseStreamAI.js
 import { useState, useRef, useCallback } from "react";
 
-const DEFAULT_STREAM_ENDPOINT = "http://localhost:8000/stream-jeoh";
+// Use environment variable first, fallback to localhost
+const DEFAULT_STREAM_ENDPOINT =
+  import.meta.env.VITE_STREAM_ENDPOINT || "http://localhost:8000/stream-jeoh";
 
 export function useStreamAI({ userId = "guest", endpoint = DEFAULT_STREAM_ENDPOINT } = {}) {
   const [response, setResponse] = useState("");
@@ -16,71 +18,73 @@ export function useStreamAI({ userId = "guest", endpoint = DEFAULT_STREAM_ENDPOI
     }
   };
 
-  const streamAIResponse = useCallback(async ({
-    prompt,
-    onData,
-    onDone,
-    onError,
-    retryCount = 0
-  }) => {
-    const cacheKey = `${userId}:${prompt}`;
-    
-    // Check cache
-    if (cacheRef.current[cacheKey]) {
-      const cached = cacheRef.current[cacheKey];
-      setResponse(cached);
-      if (onData) onData(cached);
-      if (onDone) onDone();
-      return;
-    }
+  const streamAIResponse = useCallback(
+    async ({ prompt, onData, onDone, onError, retryCount = 0 }) => {
+      const cacheKey = `${userId}:${prompt}`;
 
-    abortPreviousRequest();
-    setLoading(true);
-    setError("");
-    setResponse("");
-
-    controllerRef.current = new AbortController();
-    const signal = controllerRef.current.signal;
-
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, user_id: userId }),
-        signal,
-      });
-
-      if (!res.ok) throw new Error("Server returned an error");
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let fullText = "";
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        fullText += chunk;
-        setResponse((prev) => prev + chunk);
-        if (onData) onData(chunk);
+      // Check cache
+      if (cacheRef.current[cacheKey]) {
+        const cached = cacheRef.current[cacheKey];
+        setResponse(cached);
+        if (onData) onData(cached);
+        if (onDone) onDone();
+        return;
       }
 
-      cacheRef.current[cacheKey] = fullText;
-      if (onDone) onDone();
+      abortPreviousRequest();
+      setLoading(true);
+      setError("");
+      setResponse("");
 
-    } catch (err) {
-      if (signal.aborted) {
-        setError("Request aborted.");
-      } else if (retryCount < 2) {
-        streamAIResponse({ prompt, onData, onDone, onError, retryCount: retryCount + 1 });
-      } else {
-        setError(err.message);
-        if (onError) onError(err);
+      controllerRef.current = new AbortController();
+      const signal = controllerRef.current.signal;
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, user_id: userId }),
+          signal,
+        });
+
+        if (!res.ok) throw new Error("Server returned an error");
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let fullText = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          fullText += chunk;
+          setResponse((prev) => prev + chunk);
+          if (onData) onData(chunk);
+        }
+
+        cacheRef.current[cacheKey] = fullText;
+        if (onDone) onDone();
+      } catch (err) {
+        if (signal.aborted) {
+          setError("Request aborted.");
+        } else if (retryCount < 2) {
+          streamAIResponse({
+            prompt,
+            onData,
+            onDone,
+            onError,
+            retryCount: retryCount + 1,
+          });
+        } else {
+          setError(err.message);
+          if (onError) onError(err);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [endpoint, userId]);
+    },
+    [endpoint, userId]
+  );
 
   const reset = () => {
     setResponse("");
@@ -97,13 +101,3 @@ export function useStreamAI({ userId = "guest", endpoint = DEFAULT_STREAM_ENDPOI
     abort: abortPreviousRequest,
   };
 }
-
-
-
-
-
-
-
-
-
-
