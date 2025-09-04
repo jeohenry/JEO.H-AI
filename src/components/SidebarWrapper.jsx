@@ -1,3 +1,5 @@
+//src/components/SidebarWrapper.jsx
+
 import React from "react";
 import AdminSidebar from "./AdminSidebar";
 import UserSidebar from "./UserSidebar";
