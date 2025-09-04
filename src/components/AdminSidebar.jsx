@@ -13,7 +13,6 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "@/context/ThemeContext";
-import "./Sidebar.css";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
