@@ -1,6 +1,6 @@
-//src/pages/Auth/Register.jsx
+// src/pages/Auth/Register.jsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../../api";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,14 @@ const Register = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
+  // ✅ Redirect to language selector if not chosen
+  useEffect(() => {
+    const lang = localStorage.getItem("i18nextLng");
+    if (!lang) {
+      navigate("/relationship/language");
+    }
+  }, [navigate]);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -23,6 +31,7 @@ const Register = () => {
     e.preventDefault();
     try {
       await axios.post("/api/register", form);
+      alert("Registration successful. Please check your email.");
       navigate("/relationship/login");
     } catch (err) {
       setError("Failed to register. Try different email/username.");
@@ -98,9 +107,5 @@ const Register = () => {
     </div>
   );
 };
-
-await axios.post("/api/register", form);
-alert("Registration successful. Please check your email.");
-navigate("/relationship/login");
 
 export default Register;
