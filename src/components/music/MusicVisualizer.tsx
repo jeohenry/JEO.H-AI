@@ -1,4 +1,4 @@
-// /src/components/music/MusicVisualizer.tsx
+// src/components/music/MusicVisualizer.tsx
 import React, { useEffect, useRef, useState } from "react";
 
 const MusicVisualizer = ({ audioRef }: { audioRef: React.RefObject<HTMLAudioElement> }) => {
