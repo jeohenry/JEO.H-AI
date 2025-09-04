@@ -22,6 +22,7 @@ import UploadPicture from "@/pages/relationship/Upload";
 import LiveTranslatorTabs from "@/modules/LiveTranslatorTabs";
 import TranslatedFeed from "@/pages/relationship/TranslatedFeed";
 import RelationshipTools from "@/pages/relationship/RelationshipTools";
+import TranslatedPost from "@/pages/post/TranslatedPost"; // ✅ added
 
 const UserRoutes = () => (
   <>
@@ -46,6 +47,14 @@ const UserRoutes = () => (
       element={
         <PageWrapper animation={slideUp}>
           <TranslatedFeed />
+        </PageWrapper>
+      }
+    />
+    <Route
+      path="post/:id/translated" // ✅ new route
+      element={
+        <PageWrapper animation={scaleFade}>
+          <TranslatedPost />
         </PageWrapper>
       }
     />
@@ -93,7 +102,7 @@ const UserRoutes = () => (
       path="live-video-chat"
       element={
         <PageWrapper animation={slideRight}>
-          <LiveVideo />
+          <LiveVideoChat /> {/* ✅ fixed wrong import name */}
         </PageWrapper>
       }
     />
