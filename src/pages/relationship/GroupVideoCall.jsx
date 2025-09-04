@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
-import PageWrapper from "../components/PageWrapper";
+import PageWrapper from "@/components/PageWrapper";
 
 const servers = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -22,12 +22,15 @@ const GroupVideoCall = () => {
   const roomId = searchParams.get("room") || "default";
   const navigate = useNavigate();
   const ws = useRef(null);
+  const recordWs = useRef(null);
   const localStream = useRef(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState(null);
 
   useEffect(() => {
-    ws.current = new WebSocket(`ws://localhost:8000/ws/call/${roomId}`);
+    ws.current = new WebSocket(`ws://localhost:8000/ws/group/${roomId}`);
 
     ws.current.onmessage = async (event) => {
       const data = JSON.parse(event.data);
@@ -149,6 +152,45 @@ const GroupVideoCall = () => {
     ws.current.send(JSON.stringify({ typing: true, from: roomId }));
   };
 
+  // ----------------------------
+  // Recording functions
+  // ----------------------------
+  const startRecording = () => {
+    if (!localStream.current) return;
+    recordWs.current = new WebSocket(`ws://localhost:8000/ws/group/${roomId}`);
+    const mediaRecorder = new MediaRecorder(localStream.current, { mimeType: "video/webm" });
+    mediaRecorder.ondataavailable = (e) => {
+      if (recordWs.current.readyState === WebSocket.OPEN && e.data.size > 0) {
+        e.data.arrayBuffer().then((buffer) => recordWs.current.send(buffer));
+      }
+    };
+    mediaRecorder.start(1000);
+    recordWs.current.onopen = () => toast.success("⏺️ Recording started");
+    setRecording(true);
+
+    recordWs.current.onclose = async () => {
+      toast.success("⏹️ Recording stopped");
+      // Fetch download URL
+      try {
+        const res = await fetch(`http://localhost:8000/group/download/${roomId}`);
+        const data = await res.json();
+        setDownloadUrl(data.download_url);
+      } catch (err) {
+        toast.error("❌ Failed to get download URL");
+      }
+    };
+
+    localStreamRef.current = mediaRecorder;
+  };
+
+  const stopRecording = () => {
+    if (localStreamRef.current && localStreamRef.current instanceof MediaRecorder) {
+      localStreamRef.current.stop();
+      recordWs.current.close();
+      setRecording(false);
+    }
+  };
+
   return (
     <PageWrapper>
       <motion.div
@@ -196,6 +238,20 @@ const GroupVideoCall = () => {
               <button onClick={leaveCall} className="bg-red-600 px-4 py-2 rounded text-white">
                 ❌ Leave
               </button>
+              {!recording ? (
+                <button onClick={startRecording} className="bg-yellow-600 px-4 py-2 rounded text-white">
+                  ⏺️ Start Recording
+                </button>
+              ) : (
+                <button onClick={stopRecording} className="bg-orange-600 px-4 py-2 rounded text-white">
+                  ⏹️ Stop Recording
+                </button>
+              )}
+              {downloadUrl && (
+                <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="bg-purple-600 px-4 py-2 rounded text-white">
+                  ⬇️ Download
+                </a>
+              )}
             </div>
           </div>
 
@@ -233,61 +289,3 @@ const GroupVideoCall = () => {
 };
 
 export default GroupVideoCall;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
