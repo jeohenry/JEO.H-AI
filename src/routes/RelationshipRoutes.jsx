@@ -4,9 +4,9 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import RelationshipLayout from "@/layouts/RelationshipLayout";
 
-import PublicRoutes from "./relationship.public.routes";
-import UserRoutes from "./relationship.user.routes";
-import AdminRoutes from "./relationship.admin.routes";
+import PublicRoutes from "./RelationshipPublicRoutes";
+import UserRoutes from "./RelationshipUserRoutes";
+import AdminRoutes from "./RelationshipAdminRoutes";
 
 const getRole = () => localStorage.getItem("role");
 const isAuthenticated = () => !!localStorage.getItem("token");
