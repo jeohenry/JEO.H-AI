@@ -13,7 +13,7 @@ import ChatRoom from "@/pages/relationship/ChatRoom";
 import MatchMaker from "@/pages/relationship/MatchMaker";
 import Advice from "@/pages/relationship/Advice";
 import GroupVideoCall from "@/pages/relationship/GroupVideoCall";
-import LiveVideo from "@/pages/relationship/LiveVideochat";
+import LiveVideo from "@/pages/relationship/LiveVideoChat";
 import Notifications from "@/pages/Notifications";
 import UploadPicture from "@/pages/relationship/Upload";
 import LiveTranslatorTabs from "@/modules/LiveTranslatorTabs";
