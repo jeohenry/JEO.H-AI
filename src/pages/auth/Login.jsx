@@ -1,6 +1,6 @@
-//src/pages/Auth/Login.jsx
+// src/pages/Auth/Login.jsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../../api";
 import { useNavigate } from "react-router-dom";
 
@@ -8,8 +8,15 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
   const navigate = useNavigate();
+
+  // ✅ Redirect to language selector if not chosen
+  useEffect(() => {
+    const lang = localStorage.getItem("i18nextLng");
+    if (!lang) {
+      navigate("/relationship/language");
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
