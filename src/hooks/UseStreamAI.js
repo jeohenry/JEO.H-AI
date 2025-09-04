@@ -1,9 +1,9 @@
 // src/hooks/UseStreamAI.js
 import { useState, useRef, useCallback } from "react";
 
-// Use environment variable first, fallback to localhost
-const DEFAULT_STREAM_ENDPOINT =
-  import.meta.env.VITE_STREAM_ENDPOINT || "http://localhost:8000/stream-jeoh";
+// Base URL from env or fallback to localhost
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const DEFAULT_STREAM_ENDPOINT = `${API_BASE}/stream-jeoh`;
 
 export function useStreamAI({ userId = "guest", endpoint = DEFAULT_STREAM_ENDPOINT } = {}) {
   const [response, setResponse] = useState("");
