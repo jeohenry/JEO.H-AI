@@ -1,6 +1,12 @@
 // src/App.jsx
-import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React, { Suspense, lazy, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  useNavigationType,
+} from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 // Layouts
@@ -10,7 +16,6 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import RelationshipRoutes from "./routes/RelationshipRoutes";
 
 // UI Components
-import Loading from "./components/Loading";
 import PageWrapper from "./components/PageWrapper";
 
 // Animations
@@ -20,6 +25,9 @@ import { slideUp, slideRight, scaleFade, pageFade } from "./config/animations";
 import Home from "./pages/Home";
 import DashboardHome from "./pages/DashboardHome";
 import NotFound from "./pages/NotFound";
+
+// Context
+import { LoadingProvider, useLoading } from "./context/LoadingContext";
 
 // Lazy-loaded AI Modules
 const ChatAI = lazy(() => import("./modules/Chat/ChatModule"));
@@ -35,75 +43,70 @@ const ImageClassifyAI = lazy(() => import("./modules/ImageClassifier/ImageClassi
 const VoiceAssistant = lazy(() => import("./modules/Voice/VoiceAssistant"));
 const ProgressiveAI = lazy(() => import("./components/ProgressivelearningAI"));
 
-// Auth
-const Login = lazy(() => import("./pages/auth/Login"));
-const Register = lazy(() => import("./pages/auth/Register"));
-const PasswordReset = lazy(() => import("./pages/auth/PasswordReset"));
-const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
-const LanguageSelector = lazy(() => import("./pages/auth/LanguageSelector"));
+/* 🔹 Component that hooks into router to trigger Loading overlay */
+function RouteChangeHandler() {
+  const { setLoading } = useLoading();
+  const location = useLocation();
+  const navigationType = useNavigationType();
 
-// Relationship Module Tabs
-const LiveTranslatorTabs = lazy(() => import("./modules/relationship/LiveTranslatorTabs"));
+  useEffect(() => {
+    // Show loading when navigation starts
+    setLoading(true);
+
+    // Hide after short delay (when new component mounts)
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [location, navigationType, setLoading]);
+
+  return null;
+}
 
 function App() {
   return (
     <Router>
-      <AnimatePresence mode="wait">
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            {/* 🔐 AUTH + LANGUAGE SELECTOR */}
-            <Route path="/login" element={<PageWrapper animation={slideRight}><Login /></PageWrapper>} />
-            <Route path="/register" element={<PageWrapper animation={slideRight}><Register /></PageWrapper>} />
-            <Route path="/password-reset" element={<PageWrapper animation={pageFade}><PasswordReset /></PageWrapper>} />
-            <Route path="/reset-password" element={<PageWrapper animation={pageFade}><ResetPassword /></PageWrapper>} />
-            <Route path="/select-language" element={<PageWrapper animation={scaleFade}><LanguageSelector /></PageWrapper>} />
+      <LoadingProvider>
+        <RouteChangeHandler /> {/* 👈 listens to navigation */}
+        <AnimatePresence mode="wait">
+          <Suspense fallback={null}> {/* handled via context */}
+            <Routes>
+              {/* 🧠 GENERAL AI MODULES (MainLayout) */}
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<PageWrapper animation={pageFade}><Home /></PageWrapper>} />
+                <Route path="/chat" element={<PageWrapper animation={slideUp}><ChatAI /></PageWrapper>} />
+                <Route path="/translate" element={<PageWrapper animation={slideRight}><TranslateAI /></PageWrapper>} />
+                <Route path="/predict" element={<PageWrapper animation={scaleFade}><PredictAI /></PageWrapper>} />
+                <Route path="/recommend" element={<PageWrapper animation={slideRight}><RecommendAI /></PageWrapper>} />
+                <Route path="/health" element={<PageWrapper animation={slideUp}><HealthAI /></PageWrapper>} />
+                <Route path="/content" element={<PageWrapper animation={scaleFade}><ContentAI /></PageWrapper>} />
+                <Route path="/advertising" element={<PageWrapper animation={slideRight}><AdvertisingAI /></PageWrapper>} />
+                <Route path="/music" element={<PageWrapper animation={scaleFade}><MusicAI /></PageWrapper>} />
+                <Route path="/face-detect" element={<PageWrapper animation={slideUp}><FaceDetectAI /></PageWrapper>} />
+                <Route path="/image-classify" element={<PageWrapper animation={slideUp}><ImageClassifyAI /></PageWrapper>} />
+                <Route path="/voice-assistant" element={<PageWrapper animation={pageFade}><VoiceAssistant /></PageWrapper>} />
+                <Route path="/progressive-ai" element={<PageWrapper animation={slideRight}><ProgressiveAI /></PageWrapper>} />
+              </Route>
 
-            {/* 🧠 GENERAL AI MODULES (MainLayout) */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<PageWrapper animation={pageFade}><Home /></PageWrapper>} />
-              <Route path="/chat" element={<PageWrapper animation={slideUp}><ChatAI /></PageWrapper>} />
-              <Route path="/translate" element={<PageWrapper animation={slideRight}><TranslateAI /></PageWrapper>} />
-              <Route path="/predict" element={<PageWrapper animation={scaleFade}><PredictAI /></PageWrapper>} />
-              <Route path="/recommend" element={<PageWrapper animation={slideRight}><RecommendAI /></PageWrapper>} />
-              <Route path="/health" element={<PageWrapper animation={slideUp}><HealthAI /></PageWrapper>} />
-              <Route path="/content" element={<PageWrapper animation={scaleFade}><ContentAI /></PageWrapper>} />
-              <Route path="/advertising" element={<PageWrapper animation={slideRight}><AdvertisingAI /></PageWrapper>} />
-              <Route path="/music" element={<PageWrapper animation={scaleFade}><MusicAI /></PageWrapper>} />
-              <Route path="/face-detect" element={<PageWrapper animation={slideUp}><FaceDetectAI /></PageWrapper>} />
-              <Route path="/image-classify" element={<PageWrapper animation={slideUp}><ImageClassifyAI /></PageWrapper>} />
-              <Route path="/voice-assistant" element={<PageWrapper animation={pageFade}><VoiceAssistant /></PageWrapper>} />
-              <Route path="/progressive-ai" element={<PageWrapper animation={slideRight}><ProgressiveAI /></PageWrapper>} />
-            </Route>
+              {/* ❤️ RELATIONSHIP MODULE */}
+              <Route path="/relationship/*" element={<RelationshipLayout />}>
+                <Route path="*" element={<RelationshipRoutes />} />
+              </Route>
 
-            {/* ❤️ RELATIONSHIP MODULE */}
-            <Route path="/relationship/*" element={<RelationshipLayout />}>
-              <Route path="*" element={<RelationshipRoutes />} />
-              <Route path="translate" element={<PageWrapper animation={slideUp}><LiveTranslatorTabs /></PageWrapper>} />
-            </Route>
+              {/* 📊 DASHBOARD ROUTES (Admin or Internal Use) */}
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<PageWrapper animation={pageFade}><DashboardHome /></PageWrapper>} />
+              </Route>
 
-            {/* 📊 DASHBOARD ROUTES (Admin or Internal Use) */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<PageWrapper animation={pageFade}><DashboardHome /></PageWrapper>} />
-              {/* Add more dashboard children here: e.g.
-                <Route path="analytics" element={<PageWrapper animation={scaleFade}><AnalyticsPage /></PageWrapper>} />
-              */}
-            </Route>
-
-            {/* ❌ CATCH ALL */}
-            <Route path="*" element={<PageWrapper animation={pageFade}><NotFound /></PageWrapper>} />
-          </Routes>
-        </Suspense>
-      </AnimatePresence>
+              {/* ❌ CATCH ALL */}
+              <Route path="*" element={<PageWrapper animation={pageFade}><NotFound /></PageWrapper>} />
+            </Routes>
+          </Suspense>
+        </AnimatePresence>
+      </LoadingProvider>
     </Router>
   );
 }
 
 export default App;
-
-
-
-
-
-
-
-
