@@ -1,10 +1,9 @@
-//src/api.js
-
+// src/api.js
 import axios from "axios";
 
 /* ───────── 🌍 BASE URL FROM ENV ───────── */
-// Now points to the proxy server, never exposes real backend
-const BASE_URL = import.meta.env.VITE_PROXY_URL || "http://localhost:3000/api";
+// Use the same API base as your hooks
+const BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 /* ───────── 🔗 AXIOS INSTANCE ───────── */
 const API = axios.create({
