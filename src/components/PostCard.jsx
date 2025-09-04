@@ -1,4 +1,4 @@
-// components/PostCard.jsx
+// src/components/PostCard.jsx
 import React from "react";
 
 
