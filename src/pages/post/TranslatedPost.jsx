@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "../../utils/API";
-import PageWrapper from "../../components/PageWrapper";
+import axios from "./api";
+import PageWrapper from "../components/PageWrapper";
 import { motion } from "framer-motion";
-import { fadeIn, slideUp } from "../../config/animations";
+import { fadeIn, slideUp } from "../config/Animations";
 
 const TranslatedPost = () => {
   const { id } = useParams();
