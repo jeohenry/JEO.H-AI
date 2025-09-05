@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import axios from "../api";
-import ChatBox from "../components/ChatBox";
-import PageWrapper from "../components/PageWrapper";
-import { useWebRTCChat } from "../hooks/useWebRTCChat";
-import { useStreamAI } from "../hooks/useStreamAI"; // ✅ Import the hook
+import axios from "@/api";
+import ChatBox from "@/components/ChatBox";
+import PageWrapper from "@/components/PageWrapper";
+import { useWebRTCChat } from "@/hooks/useWebRTCChat";
+import { useStreamAI } from "@/hooks/useStreamAI"; // ✅ Import the hook
 
 const ChatRoom = () => {
   const [matches, setMatches] = useState([]);
