@@ -1,7 +1,7 @@
 // src/pages/Auth/Login.jsx
 
 import React, { useState, useEffect } from "react";
-import axios from "../api";
+import axios from "@/api";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
