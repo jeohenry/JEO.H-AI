@@ -1,7 +1,7 @@
 // 📁 src/pages/Admin/MergedFlaggedReports.jsx
 
 import React, { useEffect, useState } from "react";
-import API from "../api";
+import API from "@/api";
 
 function MergedFlaggedReports() {
   const [flags, setFlags] = useState([]);
