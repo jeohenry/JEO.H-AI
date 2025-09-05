@@ -1,7 +1,7 @@
 // src/pages/admin/AdminGlobalAnalytics.jsx
 
 import React, { useEffect, useState, useRef } from "react";
-import { fetchGlobalAnalytics } from "../../api/AdminGlobalAPI";
+import { fetchGlobalAnalytics } from "../api";
 import { Bar } from "react-chartjs-2";
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
