@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import axios from "../api";
-import PostCard from "../components/PostCard";
-import PageWrapper from "../components/PageWrapper";
+import axios from "@/api";
+import PostCard from "@/components/PostCard";
+import PageWrapper from "@/components/PageWrapper";
 import { Dialog } from "@headlessui/react";
 
 const Feed = () => {
