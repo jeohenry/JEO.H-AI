@@ -1,4 +1,4 @@
-// src/components/Sidebar/UserSidebar.jsx
+// src/components/UserSidebar.jsx
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
