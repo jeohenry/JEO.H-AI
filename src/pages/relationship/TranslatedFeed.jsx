@@ -1,7 +1,7 @@
 //src/pages/relationship/TranslatedFeed.jsx
 
 import React, { useEffect, useState } from "react";
-import axios from "../../utils/API";
+import axios from "../api";
 import { useTranslation } from "react-i18next";
 
 const TranslatedFeed = () => {
