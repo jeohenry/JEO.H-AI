@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "@/api";
 import { motion } from "framer-motion";
-import PageWrapper from "../components/PageWrapper";
+import PageWrapper from "@/components/PageWrapper";
 import {
   FiMic,
   FiMicOff,
