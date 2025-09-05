@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import PageWrapper from '@/components/PageWrapper';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion } from 'framer-motion';
-import { slideUp } from '@/config/animations';
-import useStreamAI from '@/hooks/useStreamAI';
+import { slideUp } from '@/config/Animations';
+import useStreamAI from '@/hooks/UseStreamAI';
 
 const ChatModule = () => {
   const [messages, setMessages] = useState([
