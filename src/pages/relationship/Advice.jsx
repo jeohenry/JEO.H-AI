@@ -1,7 +1,7 @@
 //src/pages/relationship/Advice.jsx
 
 import React, { useState, useRef, useEffect } from "react";
-import axios from "../api";
+import axios from "@/api";
 import { motion } from "framer-motion";
 import PageWrapper from "../components/PageWrapper";
 import {
