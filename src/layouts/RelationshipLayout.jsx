@@ -1,5 +1,4 @@
 // src/layouts/RelationshipLayout.jsx
-
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -9,7 +8,6 @@ import {
   FaBell,
   FaUserCircle,
   FaSignOutAlt,
-  FaHeart,
   FaRobot,
 } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,8 +18,9 @@ import { useTheme } from "@/context/ThemeContext";
 import axios from "@/api";
 import { defaultPageTransition } from "@/config/animations";
 
-// ✅ import ScrollFadeIn
+// ✅ imports
 import ScrollFadeIn from "@/components/ScrollFadeIn";
+import UserSidebar from "@/components/UserSidebar"; // 👈 import your sidebar
 
 const RelationshipLayout = () => {
   const navigate = useNavigate();
@@ -56,7 +55,7 @@ const RelationshipLayout = () => {
     if (!userId) return;
 
     const baseUrl = import.meta.env.VITE_BASE_URL;
-    const wsUrl = baseUrl.replace(/^http/, "ws"); 
+    const wsUrl = baseUrl.replace(/^http/, "ws");
 
     const ws = new WebSocket(`${wsUrl}/ws/notify/${userId}`);
 
@@ -81,55 +80,8 @@ const RelationshipLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-pink-100 to-rose-100 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white">
-      {/* Sidebar */}
-      <ScrollFadeIn variant="slideRight">
-        <aside
-          className={`fixed md:static z-40 h-full w-64 transform ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 transition-transform bg-gradient-to-b from-rose-600 to-pink-500 dark:from-gray-800 dark:to-gray-700`}
-        >
-          <div className="p-5 flex items-center justify-between text-white">
-            <div className="flex items-center gap-2 text-2xl font-bold">
-              <FaHeart className="animate-pulse text-pink-300" /> JEO.H Love
-            </div>
-          </div>
-          <div className="flex flex-col items-center text-white mt-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden shadow border-4 border-rose-300">
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <FaUserCircle className="text-6xl text-white" />
-              )}
-            </div>
-            <p className="mt-3 text-lg font-semibold">Hi, {user.username}!</p>
-          </div>
-          <nav className="mt-6 px-6 flex flex-col gap-3 text-white font-medium">
-            {[
-              ["Feed", "/relationship/feed"],
-              ["Translated Feed", "/relationship/translated-feed"],
-              ["Profile", "/relationship/profile"],
-              ["Chat Room", "/relationship/chatroom"],
-              ["Matchmaker", "/relationship/matchmaker"],
-              ["Advice", "/relationship/advice"],
-              ["Tools", "/relationship/tools"],
-              ["Group Video", "/relationship/group-video-call"],
-              ["Live Chat", "/relationship/live-video-chat"],
-            ].map(([label, path]) => (
-              <button
-                key={path}
-                onClick={() => navigate(path)}
-                className="text-left py-2 px-4 rounded hover:bg-rose-400 dark:hover:bg-pink-500 transition"
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
-        </aside>
-      </ScrollFadeIn>
+      {/* ✅ Use your UserSidebar instead of the inline one */}
+      <UserSidebar />
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col">
@@ -210,7 +162,7 @@ const RelationshipLayout = () => {
           </header>
         </ScrollFadeIn>
 
-        {/* AI Message Bubble (kept as motion.div since it’s transient) */}
+        {/* AI Message Bubble */}
         {aiMessage && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -235,7 +187,6 @@ const RelationshipLayout = () => {
               exit={defaultPageTransition.exit}
               transition={defaultPageTransition.transition}
             >
-              {/* ✅ All Outlet content now scroll-fades automatically */}
               <ScrollFadeIn variant="fade" delay={0.1}>
                 <Outlet />
               </ScrollFadeIn>
