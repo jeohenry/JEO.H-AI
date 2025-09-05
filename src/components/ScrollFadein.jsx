@@ -1,36 +1,39 @@
 // src/components/ScrollFadeIn.jsx
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import { animations } from "@/config/Animations";
 
-const ScrollFadeIn = ({ children, duration = 0.6, delay = 0, direction = "up" }) => {
+const ScrollFadeIn = ({
+  children,
+  variant = "slideUp", // default variant
+  duration,             // optional override
+  delay = 0,
+  once = true,
+  margin = "0px 0px -100px 0px",
+}) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "0px 0px -100px 0px" });
+  const isInView = useInView(ref, { once, margin });
 
-  // Direction-based movement
-  const variants = {
-    hidden: {
-      opacity: 0,
-      y: direction === "up" ? 40 : direction === "down" ? -40 : 0,
-      x: direction === "left" ? 40 : direction === "right" ? -40 : 0,
-    },
-    visible: {
-      opacity: 1,
-      x: 0,
-      y: 0,
-      transition: {
-        duration,
-        delay,
-        ease: "easeOut",
-      },
+  // Pull variant from animations.js
+  const selected = animations[variant] || animations.slideUp;
+
+  // Allow duration override if passed
+  const motionConfig = {
+    ...selected,
+    transition: {
+      ...selected.transition,
+      duration: duration ?? selected.transition.duration,
+      delay,
     },
   };
 
   return (
     <motion.div
       ref={ref}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      variants={variants}
+      initial="initial"
+      animate={isInView ? "animate" : "initial"}
+      exit="exit"
+      {...motionConfig}
     >
       {children}
     </motion.div>
