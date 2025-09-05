@@ -1,7 +1,7 @@
 // src/pages/auth/PasswordReset.jsx
 import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import axios from "../api";
+import axios from "@/api";
 
 const PasswordReset = () => {
   const [searchParams] = useSearchParams();
