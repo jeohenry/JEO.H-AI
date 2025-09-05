@@ -1,5 +1,4 @@
 // src/components/Sidebar/UserSidebar.jsx
-
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -15,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { Languages } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import ScrollFadeIn from "@/components/ScrollFadeIn"; // 👈 Import scroll fade
 
 const UserSidebar = () => {
   const [isOpen, setIsOpen] = useState(window.innerWidth > 768);
@@ -67,22 +67,23 @@ const UserSidebar = () => {
     setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
   };
 
-  const renderNavItem = ({ to, label, icon }) => (
-    <NavLink
-      key={to}
-      to={to}
-      title={label}
-      className={({ isActive }) =>
-        `flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${
-          isActive
-            ? "bg-pink-100 text-pink-600 font-semibold"
-            : "text-gray-700 hover:text-pink-600 hover:bg-pink-50"
-        }`
-      }
-    >
-      <span className="text-lg">{icon}</span>
-      {isOpen && <span className="text-sm">{label}</span>}
-    </NavLink>
+  const renderNavItem = ({ to, label, icon }, index) => (
+    <ScrollFadeIn key={to} direction="right" delay={index * 0.08}>
+      <NavLink
+        to={to}
+        title={label}
+        className={({ isActive }) =>
+          `flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${
+            isActive
+              ? "bg-pink-100 text-pink-600 font-semibold"
+              : "text-gray-700 hover:text-pink-600 hover:bg-pink-50"
+          }`
+        }
+      >
+        <span className="text-lg">{icon}</span>
+        {isOpen && <span className="text-sm">{label}</span>}
+      </NavLink>
+    </ScrollFadeIn>
   );
 
   return (
@@ -95,7 +96,7 @@ const UserSidebar = () => {
 
       <div className="sidebar-content flex flex-col justify-between h-full">
         {/* Header */}
-        <div className="space-y-4">
+        <ScrollFadeIn direction="down">
           <div className="sidebar-header flex items-center justify-between px-4 pt-4">
             <div className="flex items-center gap-3">
               <img src={user.avatar} alt="avatar" className="w-8 h-8 rounded-full" />
@@ -105,58 +106,64 @@ const UserSidebar = () => {
               {theme === "dark" ? "🌙" : "☀️"}
             </button>
           </div>
+        </ScrollFadeIn>
 
-          {/* Core Links */}
-          <div className="px-2 space-y-1">{coreLinks.map(renderNavItem)}</div>
+        {/* Core Links */}
+        <div className="px-2 space-y-1">
+          {coreLinks.map((link, index) => renderNavItem(link, index))}
+        </div>
 
-          {/* Tools Accordion */}
-          <div className="px-2">
-            <div
-              className="flex items-center justify-between cursor-pointer px-2 py-2"
-              onClick={() => toggleCategory("tools")}
-            >
-              {isOpen && <span className="text-xs uppercase tracking-wide">Dating Tools</span>}
-              <span className="text-sm">
-                {openCategories.tools ? <FaChevronUp /> : <FaChevronDown />}
-              </span>
-            </div>
-            {openCategories.tools && <div className="space-y-1">{toolLinks.map(renderNavItem)}</div>}
+        {/* Tools Accordion */}
+        <div className="px-2">
+          <div
+            className="flex items-center justify-between cursor-pointer px-2 py-2"
+            onClick={() => toggleCategory("tools")}
+          >
+            {isOpen && <span className="text-xs uppercase tracking-wide">Dating Tools</span>}
+            <span className="text-sm">
+              {openCategories.tools ? <FaChevronUp /> : <FaChevronDown />}
+            </span>
           </div>
-
-          {/* Live Accordion */}
-          <div className="px-2">
-            <div
-              className="flex items-center justify-between cursor-pointer px-2 py-2"
-              onClick={() => toggleCategory("live")}
-            >
-              {isOpen && <span className="text-xs uppercase tracking-wide">Live Features</span>}
-              <span className="text-sm">
-                {openCategories.live ? <FaChevronUp /> : <FaChevronDown />}
-              </span>
+          {openCategories.tools && (
+            <div className="space-y-1">
+              {toolLinks.map((link, index) => renderNavItem(link, index))}
             </div>
-            {openCategories.live && <div className="space-y-1">{liveLinks.map(renderNavItem)}</div>}
+          )}
+        </div>
+
+        {/* Live Accordion */}
+        <div className="px-2">
+          <div
+            className="flex items-center justify-between cursor-pointer px-2 py-2"
+            onClick={() => toggleCategory("live")}
+          >
+            {isOpen && <span className="text-xs uppercase tracking-wide">Live Features</span>}
+            <span className="text-sm">
+              {openCategories.live ? <FaChevronUp /> : <FaChevronDown />}
+            </span>
           </div>
+          {openCategories.live && (
+            <div className="space-y-1">
+              {liveLinks.map((link, index) => renderNavItem(link, index))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="px-4 pb-4">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-red-500 hover:bg-red-100 px-3 py-2 rounded-md w-full text-sm"
-          >
-            <FaSignOutAlt />
-            {isOpen && "Logout"}
-          </button>
-        </div>
+        <ScrollFadeIn direction="up">
+          <div className="px-4 pb-4">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-red-500 hover:bg-red-100 px-3 py-2 rounded-md w-full text-sm"
+            >
+              <FaSignOutAlt />
+              {isOpen && "Logout"}
+            </button>
+          </div>
+        </ScrollFadeIn>
       </div>
     </aside>
   );
 };
 
 export default UserSidebar;
-
-
-
-
-
-
