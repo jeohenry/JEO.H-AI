@@ -1,5 +1,4 @@
 // src/components/AdminSidebar.jsx
-
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +12,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "@/context/ThemeContext";
+import ScrollFadeIn from "@/components/ScrollFadeIn"; // 👈 Import ScrollFadeIn
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -47,22 +47,24 @@ const AdminSidebar = () => {
     navigate("/relationship/Login");
   };
 
-  const renderLink = (to, label, icon) => (
-    <NavLink
-      to={to}
-      onClick={() => isMobile && setOpen(false)}
-      title={label}
-      className={({ isActive }) =>
-        `flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${
-          isActive
-            ? "bg-pink-100 text-pink-600 font-semibold"
-            : "text-gray-700 hover:bg-pink-600 hover:bg-pink-50"
-        }`
-      }
-    >
-      <FontAwesomeIcon icon={icon} />
-      {open && <span className="text-sm">{label}</span>}
-    </NavLink>
+  const renderLink = (to, label, icon, index) => (
+    <ScrollFadeIn key={to} direction="right" delay={index * 0.08}>
+      <NavLink
+        to={to}
+        onClick={() => isMobile && setOpen(false)}
+        title={label}
+        className={({ isActive }) =>
+          `flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${
+            isActive
+              ? "bg-pink-100 text-pink-600 font-semibold"
+              : "text-gray-700 hover:bg-pink-600 hover:bg-pink-50"
+          }`
+        }
+      >
+        <FontAwesomeIcon icon={icon} />
+        {open && <span className="text-sm">{label}</span>}
+      </NavLink>
+    </ScrollFadeIn>
   );
 
   return (
@@ -76,52 +78,50 @@ const AdminSidebar = () => {
 
       <div className="sidebar-content flex flex-col justify-between h-full">
         {/* Header */}
-        <div className="space-y-4 pt-4 px-4">
-          <div className="flex items-center gap-3">
-            <img src="/avatar.png" alt="Admin Avatar" className="w-8 h-8 rounded-full" />
-            {open && (
-              <div>
-                <p className="text-sm font-medium">{adminName}</p>
-                <p className="text-xs text-gray-500 uppercase">{role}</p>
-              </div>
-            )}
+        <ScrollFadeIn direction="down">
+          <div className="space-y-4 pt-4 px-4">
+            <div className="flex items-center gap-3">
+              <img src="/avatar.png" alt="Admin Avatar" className="w-8 h-8 rounded-full" />
+              {open && (
+                <div>
+                  <p className="text-sm font-medium">{adminName}</p>
+                  <p className="text-xs text-gray-500 uppercase">{role}</p>
+                </div>
+              )}
+            </div>
           </div>
+        </ScrollFadeIn>
 
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            {renderLink("/relationship/admin-dashboard", "Dashboard", faTachometerAlt)}
-            {renderLink("/relationship/admin/analytics", "Analytics", faChartLine)}
-            {renderLink("/relationship/admin/flags", "Flagged Reports", faFlag)}
-          </nav>
-        </div>
+        {/* Navigation Links */}
+        <nav className="space-y-1">
+          {renderLink("/relationship/admin-dashboard", "Dashboard", faTachometerAlt, 0)}
+          {renderLink("/relationship/admin/analytics", "Analytics", faChartLine, 1)}
+          {renderLink("/relationship/admin/flags", "Flagged Reports", faFlag, 2)}
+        </nav>
 
         {/* Footer */}
-        <div className="px-4 pb-4 space-y-2">
-          <button
-            onClick={toggleTheme}
-            className="flex items-center gap-2 text-sm hover:text-blue-600 w-full"
-          >
-            <FontAwesomeIcon icon={faMoon} />
-            {open && `Theme (${theme})`}
-          </button>
+        <ScrollFadeIn direction="up">
+          <div className="px-4 pb-4 space-y-2">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 text-sm hover:text-blue-600 w-full"
+            >
+              <FontAwesomeIcon icon={faMoon} />
+              {open && `Theme (${theme})`}
+            </button>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-red-500 hover:text-red-600 w-full"
-          >
-            <FontAwesomeIcon icon={faSignOutAlt} />
-            {open && "Logout"}
-          </button>
-        </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm text-red-500 hover:text-red-600 w-full"
+            >
+              <FontAwesomeIcon icon={faSignOutAlt} />
+              {open && "Logout"}
+            </button>
+          </div>
+        </ScrollFadeIn>
       </div>
     </aside>
   );
 };
 
 export default AdminSidebar;
-
-
-
-
-
-
