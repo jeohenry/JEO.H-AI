@@ -1,8 +1,6 @@
-//src/routes/RelationshipRoutes.jsx
-
+// src/routes/RelationshipRoutes.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import RelationshipLayout from "@/layouts/RelationshipLayout";
 
 import RelationshipPublicRoutes from "@/routes/RelationshipPublicRoutes";
 import RelationshipUserRoutes from "@/routes/RelationshipUserRoutes";
@@ -26,24 +24,12 @@ const RelationshipRoutes = () => {
       <RelationshipPublicRoutes />
 
       {/* User Routes */}
-      <Route
-        element={
-          <ProtectedRoute allowedRoles={["user"]}>
-            <RelationshipLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
         <RelationshipUserRoutes />
       </Route>
 
       {/* Admin Routes */}
-      <Route
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <RelationshipLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
         <RelationshipAdminRoutes />
       </Route>
 
