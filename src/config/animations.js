@@ -1,4 +1,6 @@
 // src/config/Animations.js
+
+// 🔹 General-purpose variants
 export const pageFade = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
@@ -7,16 +9,30 @@ export const pageFade = {
 };
 
 export const slideUp = {
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 40 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
+  exit: { opacity: 0, y: -40 },
   transition: { duration: 0.4, ease: "easeOut" }
 };
 
-export const slideRight = {
-  initial: { opacity: 0, x: -30 },
+export const slideDown = {
+  initial: { opacity: 0, y: -40 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 40 },
+  transition: { duration: 0.4, ease: "easeOut" }
+};
+
+export const slideLeft = {
+  initial: { opacity: 0, x: 40 },
   animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: 30 },
+  exit: { opacity: 0, x: -40 },
+  transition: { duration: 0.5, ease: "easeInOut" }
+};
+
+export const slideRight = {
+  initial: { opacity: 0, x: -40 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: 40 },
   transition: { duration: 0.5, ease: "easeInOut" }
 };
 
@@ -27,5 +43,15 @@ export const scaleFade = {
   transition: { duration: 0.3 }
 };
 
-// Set your default animation globally
-export const defaultPageTransition = slideUp;
+// 🔹 Animation map for easier dynamic access
+export const animations = {
+  fade: pageFade,
+  slideUp,
+  slideDown,
+  slideLeft,
+  slideRight,
+  scaleFade,
+};
+
+// 🔹 Set your default animation globally
+export const defaultPageTransition = animations.slideUp;
