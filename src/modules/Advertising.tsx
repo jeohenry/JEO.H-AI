@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import PageWrapper from '../components/PageWrapper';
 import { motion } from 'framer-motion';
-import { slideUp } from '../config/Animations';
+import { slideUp } from '../config/animations';
 
 const Advertising = () => {
   const [formData, setFormData] = useState({
