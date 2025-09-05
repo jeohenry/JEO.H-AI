@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Line, Pie } from "react-chartjs-2";
-import { fetchAnalyticsSummary } from "../../api/AdminAPI";
+import { fetchAnalyticsSummary } from "../api";
 import { Chart, LineElement, CategoryScale, LinearScale, PointElement, ArcElement } from "chart.js";
 import { saveAs } from "file-saver";
 
