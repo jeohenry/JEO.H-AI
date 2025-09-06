@@ -12,6 +12,7 @@ import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import LoadingSuspense from "@/components/LoadingSuspense"; // ✅ new wrapper
+import ErrorBoundary from "@/components/ErrorBoundary"; // ✅ add this
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -20,9 +21,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <LoadingProvider>
             <BrowserRouter>
-              <LoadingSuspense>
-                <App />
-              </LoadingSuspense>
+              <ErrorBoundary>
+                <LoadingSuspense>
+                  <App />
+                </LoadingSuspense>
+              </ErrorBoundary>
             </BrowserRouter>
           </LoadingProvider>
         </AuthProvider>
