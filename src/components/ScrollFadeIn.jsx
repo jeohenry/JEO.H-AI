@@ -1,7 +1,7 @@
 // src/components/ScrollFadeIn.jsx
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { animations } from "@/config/Animations";
+import { animations } from "@/config/animations";
 
 const ScrollFadeIn = ({
   children,
