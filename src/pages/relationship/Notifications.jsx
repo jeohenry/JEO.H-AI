@@ -1,7 +1,7 @@
 //src/pages/relationship/Notification.jsx
 
 import React, { useEffect, useState } from 'react';
-import axios from '../api';
+import axios from '@/api';
 
 const Notifications = () => {
   const [notes, setNotes] = useState([]);
