@@ -1,20 +1,32 @@
-//src/context/ThemeContext.jsx
-
+// src/context/ThemeContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme) return storedTheme === "dark";
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return false;
+  });
 
   const toggleTheme = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem("theme", newMode ? "dark" : "light");
+    setDarkMode((prev) => {
+      const newMode = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("theme", newMode ? "dark" : "light");
+      }
+      return newMode;
+    });
   };
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", darkMode);
+    }
   }, [darkMode]);
 
   return (
@@ -25,5 +37,3 @@ export const ThemeProvider = ({ children }) => {
 };
 
 export const useTheme = () => useContext(ThemeContext);
-
-
