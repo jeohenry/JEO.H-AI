@@ -2,7 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { defaultPageTransition } from "../config/animations";
-import ScrollFadeIn from "./ScrollFadeIn"; // 👈 Import scroll fade
+import ScrollFadeIn from "@/components/ScrollFadeIn"; // 👈 Import scroll fade
 
 const PageWrapper = ({ children, animation = defaultPageTransition }) => (
   <motion.div
