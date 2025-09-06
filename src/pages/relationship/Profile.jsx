@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import axios from "../api";
-import PageWrapper from "../components/PageWrapper";
-import ProfileCard from "../components/ProfileCard";
+import axios from "@/api";
+import PageWrapper from "@/components/PageWrapper";
+import ProfileCard from "@/components/ProfileCard";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
