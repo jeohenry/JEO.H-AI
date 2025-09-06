@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PageWrapper from "@/components/PageWrapper";
 import { scaleFade } from "@/config/animations";
-import { playGreetingVoice } from "@/services/voice"; // Adjust path as needed
+import { playGreetingVoice } from "@/services/Voice"; // Adjust path as needed
 
 const languages = [
   { code: "en", label: "English" },
