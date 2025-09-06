@@ -1,10 +1,10 @@
 //src/pages/relationship/RelationshipTools.jsx
 
 import React, { useState } from "react";
-import API from "../api";
-import PageWrapper from "../components/PageWrapper";
+import API from "@/api";
+import PageWrapper from "@/components/PageWrapper";
 import { motion } from "framer-motion";
-import { fadeIn, slideUp } from "../config/animations";
+import { fadeIn, slideUp } from "@/config/animations";
 
 export default function RelationshipTools() {
   const [adviceInput, setAdviceInput] = useState("");
