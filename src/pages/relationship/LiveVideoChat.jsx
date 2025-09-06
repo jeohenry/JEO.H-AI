@@ -23,6 +23,7 @@ const LiveVideoChat = ({ userId, peerId }) => {
   const recorderRef = useRef(null);
   const localStreamRef = useRef(null);
 
+  // --- Setup peer connection and WebSocket ---
   useEffect(() => {
     const newPeerConnection = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -88,21 +89,22 @@ const LiveVideoChat = ({ userId, peerId }) => {
 
       // Recording socket
       recordWS.current = new WebSocket(`ws://localhost:8000/ws/record/private/${userId}`);
-recordWS.current.onopen = () => {
-  toast.success("🎥 Recording started", { id: "recording" });
+      recordWS.current.onopen = () => {
+        toast.success("🎥 Recording started", { id: "recording" });
 
-  const recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp8" });
-  recorder.ondataavailable = (e) => {
-    if (e.data.size > 0 && recordWS.current.readyState === WebSocket.OPEN) {
-      e.data.arrayBuffer().then((buf) => recordWS.current.send(buf));
-    }
-  };
-  recorder.start(1000); // 1s chunks
-  recorderRef.current = recorder;
-};
-recordWS.current.onclose = () => {
-  toast.error("⚠️ Recording connection closed unexpectedly", { id: "recording" });
-};
+        const recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp8" });
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0 && recordWS.current.readyState === WebSocket.OPEN) {
+            e.data.arrayBuffer().then((buf) => recordWS.current.send(buf));
+          }
+        };
+        recorder.start(1000); // 1s chunks
+        recorderRef.current = recorder;
+      };
+      recordWS.current.onclose = () => {
+        toast.error("⚠️ Recording connection closed unexpectedly", { id: "recording" });
+      };
+    });
 
     // --- Remote stream ---
     newPeerConnection.ontrack = (event) => {
@@ -114,22 +116,29 @@ recordWS.current.onclose = () => {
     newPeerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         ws.current.send(
-          JSON.stringify({ type: "candidate", candidate: event.candidate, sender: userId, target: peerId })
+          JSON.stringify({
+            type: "candidate",
+            candidate: event.candidate,
+            sender: userId,
+            target: peerId,
+          })
         );
       }
     };
 
     // Cleanup
     return () => {
-  newPeerConnection.close();
-  ws.current?.close();
-  recordWS.current?.close();
-  if (recorderRef.current) {
-    recorderRef.current.stop();
-    toast.success("💾 Recording saved", { id: "recording" });
-  }
-};
-  // Call duration timer
+      newPeerConnection.close();
+      ws.current?.close();
+      recordWS.current?.close();
+      if (recorderRef.current) {
+        recorderRef.current.stop();
+        toast.success("💾 Recording saved", { id: "recording" });
+      }
+    };
+  }, [userId, peerId]);
+
+  // --- Call duration timer ---
   useEffect(() => {
     const interval = setInterval(() => {
       if (startTime) {
@@ -205,17 +214,34 @@ recordWS.current.onclose = () => {
 
   return (
     <PageWrapper>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 grid gap-4 md:grid-cols-2 grid-cols-1">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="p-4 grid gap-4 md:grid-cols-2 grid-cols-1"
+      >
         <div className="space-y-2">
-          <video ref={localVideo} autoPlay playsInline muted className={`rounded shadow w-full filter-${selectedFilter}`} />
+          <video
+            ref={localVideo}
+            autoPlay
+            playsInline
+            muted
+            className={`rounded shadow w-full filter-${selectedFilter}`}
+          />
           <div className="flex justify-between items-center">
             <p className="font-medium">Your Camera</p>
             <span className="text-sm text-gray-500">⏱️ {callDuration}</span>
           </div>
           <div className="flex gap-2">
-            <button onClick={toggleMic} className="bg-gray-800 p-2 text-white rounded">{micOn ? <Mic /> : <MicOff />}</button>
-            <button onClick={toggleCamera} className="bg-gray-800 p-2 text-white rounded">{cameraOn ? <Camera /> : <CameraOff />}</button>
-            <button onClick={downloadRecording} className="bg-purple-600 p-2 text-white rounded flex items-center gap-1">
+            <button onClick={toggleMic} className="bg-gray-800 p-2 text-white rounded">
+              {micOn ? <Mic /> : <MicOff />}
+            </button>
+            <button onClick={toggleCamera} className="bg-gray-800 p-2 text-white rounded">
+              {cameraOn ? <Camera /> : <CameraOff />}
+            </button>
+            <button
+              onClick={downloadRecording}
+              className="bg-purple-600 p-2 text-white rounded flex items-center gap-1"
+            >
               <Download size={16} /> Download
             </button>
           </div>
@@ -257,13 +283,22 @@ recordWS.current.onclose = () => {
               placeholder="Type a message"
               className="flex-1 p-2 border rounded"
             />
-            <button onClick={sendMessage} className="px-4 bg-blue-600 text-white rounded">Send</button>
-            <button onClick={handleVoiceToText} className="px-4 bg-gray-700 text-white rounded"><Mic size={16} /></button>
-            <button className="px-4 bg-yellow-500 text-white rounded"><Smile size={16} /></button>
+            <button onClick={sendMessage} className="px-4 bg-blue-600 text-white rounded">
+              Send
+            </button>
+            <button onClick={handleVoiceToText} className="px-4 bg-gray-700 text-white rounded">
+              <Mic size={16} />
+            </button>
+            <button className="px-4 bg-yellow-500 text-white rounded">
+              <Smile size={16} />
+            </button>
           </div>
         </div>
 
-        <button onClick={callPeer} className="p-2 bg-green-600 text-white rounded md:col-span-2">
+        <button
+          onClick={callPeer}
+          className="p-2 bg-green-600 text-white rounded md:col-span-2"
+        >
           Start Video Call
         </button>
       </motion.div>
