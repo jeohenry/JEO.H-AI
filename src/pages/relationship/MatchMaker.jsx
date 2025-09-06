@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import axios from "../api";
-import MatchSignalBox from "../components/MatchSignalBox";
-import PageWrapper from "../components/PageWrapper";
+import axios from "@/api";
+import MatchSignalBox from "@/components/MatchSignalBox";
+import PageWrapper from "@/components/PageWrapper";
 
 const MatchMaker = () => {
   const [matches, setMatches] = useState([]);
