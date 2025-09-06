@@ -13,5 +13,8 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
+    rollupOptions: {
+      external: ["jspdf"], // 👈 Prevent Rollup from bundling jspdf
+    },
   },
 });
