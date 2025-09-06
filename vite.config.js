@@ -13,8 +13,10 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
+    sourcemap: true, // ✅ enable source maps for debugging
     rollupOptions: {
-      external: ["jspdf", "jspdf-autotable", "react-hot-toast"],
+      // ⚠️ Don't mark these as external unless you load them via CDN
+      // external: ["jspdf", "jspdf-autotable", "react-hot-toast"],
     },
   },
 });
