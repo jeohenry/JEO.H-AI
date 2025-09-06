@@ -7,21 +7,40 @@ export default class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
+    // Update state so fallback UI is shown
     return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("App crashed:", error, errorInfo);
+    // Log error details to console or external service
+    console.error("❌ App crashed:", error, errorInfo);
+
+    // Store component stack for display
     this.setState({ errorInfo });
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "2rem", color: "red", fontFamily: "monospace" }}>
+        <div
+          style={{
+            padding: "2rem",
+            color: "#b91c1c",
+            fontFamily: "monospace",
+            background: "#fff0f0",
+            borderRadius: "8px",
+          }}
+        >
           <h2>⚠️ Something went wrong</h2>
-          <p>{this.state.error?.toString()}</p>
-          <pre>{this.state.errorInfo?.componentStack}</pre>
+          <p>
+            <strong>Error:</strong> {this.state.error?.message || this.state.error?.toString()}
+          </p>
+          {this.state.errorInfo?.componentStack && (
+            <details style={{ whiteSpace: "pre-wrap", marginTop: "1rem" }}>
+              <summary>Stack trace</summary>
+              {this.state.errorInfo.componentStack}
+            </details>
+          )}
         </div>
       );
     }
