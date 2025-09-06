@@ -1,129 +1,84 @@
 // src/components/NavBar.jsx
 import React, { useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import {
-  FaBars,
-  FaTimes,
-  FaHome,
-  FaRobot,
-  FaHeart,
-  FaBrain,
-  FaHeartbeat,
-  FaMicrophone,
-  FaMusic,
-  FaPalette,
-  FaChartLine,
-  FaComments,
-  FaUserCircle,
-  FaSun,
-  FaMoon,
-} from "react-icons/fa";
-import { useTheme } from "../context/ThemeContext";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import ScrollFadeIn from "@/components/ScrollFadeIn"; // 👈
+import { NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { routesConfig } from "@/config/routesConfig";
 
 const NavBar = () => {
-  const { darkMode, toggleTheme } = useTheme();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
-
-  const navItems = [
-    { name: "Home", path: "/", icon: <FaHome /> },
-    { name: "Chat", path: "/chat", icon: <FaComments /> },
-    { name: "Translate", path: "/translate", icon: <FaRobot /> },
-    { name: "Predict", path: "/predict", icon: <FaBrain /> },
-    { name: "Recommend", path: "/recommend", icon: <FaChartLine /> },
-    { name: "Health", path: "/health", icon: <FaHeartbeat /> },
-    { name: "Content", path: "/content", icon: <FaPalette /> },
-    { name: "Advertising", path: "/advertising", icon: <FaChartLine /> },
-    { name: "Music", path: "/music", icon: <FaMusic /> },
-    { name: "Face Detect", path: "/face-detect", icon: <FaUserCircle /> },
-    { name: "Image Classify", path: "/image-classify", icon: <FaUserCircle /> },
-    { name: "Voice", path: "/voice-assistant", icon: <FaMicrophone /> },
-    { name: "Progressive AI", path: "/progressive-ai", icon: <FaBrain /> },
-    { name: "Relationship", path: "/relationship/feed", icon: <FaHeart /> },
-  ];
-
-  return (
-    <header className="w-full bg-white dark:bg-gray-900 shadow-md fixed top-0 z-50">
-      {/* Topbar */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button className="md:hidden text-2xl" onClick={toggleMobileMenu}>
-            {mobileOpen ? <FaTimes /> : <FaBars />}
-          </button>
-          <div
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-2xl font-bold text-rose-600 dark:text-pink-300 cursor-pointer"
+  const renderNavItem = (item, isChild = false) => {
+    if (item.children) {
+      return (
+        <div key={item.name} className="relative group">
+          <button
+            className="flex items-center space-x-2 px-4 py-2 w-full text-left hover:bg-gray-200 rounded-xl"
           >
-            <FaRobot /> JEO.H AI
+            {item.icon}
+            <span>{item.name}</span>
+          </button>
+          <div className="absolute left-0 mt-2 hidden group-hover:block bg-white shadow-lg rounded-xl">
+            {item.children.map((child) => renderNavItem(child, true))}
           </div>
         </div>
+      );
+    }
 
-        <div className="flex items-center gap-4">
-          <button onClick={toggleTheme} title="Toggle Theme">
-            {darkMode ? (
-              <FaSun className="text-yellow-400 text-xl" />
-            ) : (
-              <FaMoon className="text-xl" />
-            )}
-          </button>
-          <LanguageSwitcher />
+    return (
+      <NavLink
+        key={item.path}
+        to={item.path}
+        className={({ isActive }) =>
+          `flex items-center space-x-2 px-4 py-2 hover:bg-gray-200 rounded-xl ${
+            isActive ? "bg-gray-300 font-semibold" : ""
+          } ${isChild ? "pl-8" : ""}`
+        }
+        onClick={() => setIsOpen(false)}
+      >
+        {item.icon}
+        <span>{item.name}</span>
+      </NavLink>
+    );
+  };
+
+  return (
+    <nav className="bg-white shadow-md sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        {/* Logo */}
+        <NavLink to="/" className="text-xl font-bold">
+          JEO.H-AI
+        </NavLink>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex space-x-4">
+          {routesConfig.map((item) => renderNavItem(item, false))}
         </div>
+
+        {/* Mobile Hamburger */}
+        <button
+          className="md:hidden flex flex-col space-y-1"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className="w-6 h-0.5 bg-black"></span>
+          <span className="w-6 h-0.5 bg-black"></span>
+          <span className="w-6 h-0.5 bg-black"></span>
+        </button>
       </div>
 
-      {/* Desktop Nav with ScrollFadeIn + Stagger */}
-      <ScrollFadeIn direction="down">
-        <nav className="hidden md:flex justify-center gap-6 py-2 bg-rose-100 dark:bg-gray-800 text-sm font-medium">
-          {navItems.map((item) => (
-            <ScrollFadeIn key={item.path} direction="up">
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-3 py-1 rounded transition-all ${
-                    isActive
-                      ? "bg-pink-600 text-white"
-                      : "text-gray-700 dark:text-white hover:bg-pink-200 dark:hover:bg-pink-600"
-                  }`
-                }
-              >
-                {item.icon}
-                {item.name}
-              </NavLink>
-            </ScrollFadeIn>
-          ))}
-        </nav>
-      </ScrollFadeIn>
-
-      {/* Mobile Nav with ScrollFadeIn + Stagger */}
-      {mobileOpen && (
-        <ScrollFadeIn direction="up">
-          <nav className="md:hidden flex flex-col bg-rose-100 dark:bg-gray-800 px-4 py-3 space-y-2">
-            {navItems.map((item) => (
-              <ScrollFadeIn key={item.path} direction="right">
-                <NavLink
-                  to={item.path}
-                  onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-2 rounded transition-all ${
-                      isActive
-                        ? "bg-pink-600 text-white"
-                        : "text-gray-800 dark:text-white hover:bg-pink-200 dark:hover:bg-pink-600"
-                    }`
-                  }
-                >
-                  {item.icon}
-                  {item.name}
-                </NavLink>
-              </ScrollFadeIn>
-            ))}
-          </nav>
-        </ScrollFadeIn>
-      )}
-    </header>
+      {/* Mobile Nav */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
+            className="md:hidden overflow-hidden bg-white shadow-md"
+          >
+            {routesConfig.map((item) => renderNavItem(item, false))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
   );
 };
 
