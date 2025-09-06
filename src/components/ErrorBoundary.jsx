@@ -1,3 +1,4 @@
+// src/components/ErrorBoundary.jsx
 import React from "react";
 
 export default class ErrorBoundary extends React.Component {
@@ -12,8 +13,13 @@ export default class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error details to console or external service
+    // Always log to normal console
     console.error("❌ App crashed:", error, errorInfo);
+
+    // If Eruda is enabled, log there too
+    if (window.eruda) {
+      window.eruda.get("console").log("❌ App crashed:", error, errorInfo);
+    }
 
     // Store component stack for display
     this.setState({ errorInfo });
@@ -33,7 +39,8 @@ export default class ErrorBoundary extends React.Component {
         >
           <h2>⚠️ Something went wrong</h2>
           <p>
-            <strong>Error:</strong> {this.state.error?.message || this.state.error?.toString()}
+            <strong>Error:</strong>{" "}
+            {this.state.error?.message || this.state.error?.toString()}
           </p>
           {this.state.errorInfo?.componentStack && (
             <details style={{ whiteSpace: "pre-wrap", marginTop: "1rem" }}>
