@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, BrainCircuit, Trash2, Edit, Save, Upload, Download } from 'lucide-react';
 import { saveAs } from 'file-saver';
-import { trainAI, queryAI } from "../api/api";
+import { trainAI, queryAI } from "@/api";
 
 const ProgressiveLearningAI = () => {
   const [askInput, setAskInput] = useState('');
