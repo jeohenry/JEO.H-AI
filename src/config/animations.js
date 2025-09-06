@@ -1,4 +1,4 @@
-// src/config/Animations.js
+// src/config/animations.js
 
 // 🔹 General-purpose variants
 export const pageFade = {
@@ -7,6 +7,9 @@ export const pageFade = {
   exit: { opacity: 0 },
   transition: { duration: 0.3 }
 };
+
+// 🔹 Alias for backward compatibility
+export const fadeIn = pageFade;
 
 export const slideUp = {
   initial: { opacity: 0, y: 40 },
@@ -46,6 +49,7 @@ export const scaleFade = {
 // 🔹 Animation map for easier dynamic access
 export const animations = {
   fade: pageFade,
+  fadeIn,     // 👈 backward-compatible alias
   slideUp,
   slideDown,
   slideLeft,
