@@ -7,16 +7,18 @@ import i18n from "@/i18n";
 import App from "@/App";
 import "@/index.css";
 
-// Context providers
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoadingProvider } from "@/context/LoadingContext";
-import LoadingSuspense from "@/components/LoadingSuspense"; // ✅ new wrapper
-import ErrorBoundary from "@/components/ErrorBoundary"; // ✅ error boundary
+import LoadingSuspense from "@/components/LoadingSuspense";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
-/* ───────── 🔹 Mobile Debug Console (Eruda) ───────── */
+// ✅ Only load Eruda when ?debug=true
 if (window.location.search.includes("debug=true")) {
-  import("eruda").then((eruda) => eruda.init());
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/npm/eruda";
+  script.onload = () => window.eruda && window.eruda.init();
+  document.body.appendChild(script);
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
