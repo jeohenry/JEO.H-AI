@@ -1,4 +1,4 @@
-// src/hooks/UseWebRTCChat.js
+// src/hooks/usewebRTCChat.js
 import { useEffect, useRef, useState } from "react";
 
 // Base URL from env or fallback to localhost
