@@ -1,4 +1,4 @@
-// src/hooks/UseStreamAI.js
+// src/hooks/useStreamAI.js
 import { useState, useRef, useCallback } from "react";
 
 // Base URL from env or fallback to localhost
@@ -101,3 +101,6 @@ export function useStreamAI({ userId = "guest", endpoint = DEFAULT_STREAM_ENDPOI
     abort: abortPreviousRequest,
   };
 }
+
+// 👇 Added default export so `import useStreamAI from ...` works
+export default useStreamAI;
