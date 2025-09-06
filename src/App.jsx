@@ -33,7 +33,7 @@ const TrackingAI = lazy(() => import("./modules/TrackingAI"));
 const PredictAI = lazy(() => import("./modules/Predict"));
 const RecommendAI = lazy(() => import("./modules/Recommend"));
 const HealthAI = lazy(() => import("./modules/HealthAI"));
-const ContentAI = lazy(() => import("./modules/ContentCreator/ContentCreator"));
+const ContentAI = lazy(() => import("./modules/ContentCreator"));
 const AdvertisingAI = lazy(() => import("./modules/Advertising"));
 const MusicAI = lazy(() => import("./modules/MusicModule"));
 const FaceDetectAI = lazy(() => import("./modules/FaceDetection"));
