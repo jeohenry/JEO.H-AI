@@ -1,19 +1,17 @@
-//src/modules/MusicModule.tsx
-
+// src/modules/MusicModule.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Music, Mic, Wand2, Download } from 'lucide-react';
+import { Loader2, Music, Wand2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { motion } from 'framer-motion';
 import PageWrapper from '@/components/PageWrapper';
 import ExportButtonGroup from '@/components/music/ExportButtonGroup';
 import MusicVisualizer from '@/components/music/MusicVisualizer';
 import TrackMixer from '@/components/music/TrackMixer';
-import ThemeSwitcher from '@/components/music/ThemeSwitcher';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 const MusicModule = () => {
   const [query, setQuery] = useState('');
@@ -63,15 +61,19 @@ const MusicModule = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
+        {/* Header with Theme Switcher */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
-            <Music className="text-indigo-600" />
-            <h2 className="text-3xl font-bold">🎼 JEO.H Advanced Music AI</h2>
+            <Music className="text-indigo-600 dark:text-indigo-400" />
+            <h2 className="text-3xl font-bold dark:text-white">
+              🎼 JEO.H Advanced Music AI
+            </h2>
           </div>
           <ThemeSwitcher />
         </div>
 
-        <Card className="shadow-xl border bg-gradient-to-br from-indigo-100 to-pink-50">
+        {/* Card with dark/light background */}
+        <Card className="shadow-xl border bg-gradient-to-br from-indigo-100 to-pink-50 dark:from-gray-900 dark:to-gray-800">
           <CardContent className="space-y-6 p-6">
             <Tabs defaultValue="lyrics">
               <TabsList>
@@ -81,22 +83,24 @@ const MusicModule = () => {
                 <TabsTrigger value="mix">🎚️ Mixer</TabsTrigger>
               </TabsList>
 
+              {/* Lyrics Tab */}
               <TabsContent value="lyrics">
                 <Textarea
                   placeholder="Describe a vibe, story or theme..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="min-h-[120px]"
+                  className="min-h-[120px] dark:bg-gray-900 dark:text-gray-100"
                 />
                 <Button onClick={handleGenerateLyrics} disabled={loading} className="mt-4">
                   {loading ? <Loader2 className="animate-spin" /> : 'Generate Lyrics'}
                 </Button>
+
                 {lyrics && (
                   <>
                     <Textarea
                       value={lyrics}
                       onChange={(e) => setLyrics(e.target.value)}
-                      className="mt-4 bg-white"
+                      className="mt-4 bg-white dark:bg-gray-900 dark:text-gray-100"
                     />
                     <Button onClick={handleGenerateLyrics} variant="ghost" className="mt-2">
                       <Wand2 className="mr-2 h-4 w-4" /> Regenerate Lyrics
@@ -105,12 +109,13 @@ const MusicModule = () => {
                 )}
               </TabsContent>
 
+              {/* Voice Tab */}
               <TabsContent value="voice">
                 <div className="space-y-4">
                   <select
                     value={voiceId}
                     onChange={(e) => setVoiceId(e.target.value)}
-                    className="w-full border p-2 rounded"
+                    className="w-full border p-2 rounded dark:bg-gray-900 dark:text-gray-100"
                   >
                     {voices.map((v, idx) => (
                       <option key={idx} value={v.id}>{v.name}</option>
@@ -129,14 +134,18 @@ const MusicModule = () => {
                 </div>
               </TabsContent>
 
+              {/* Preview Tab */}
               <TabsContent value="preview">
                 {voiceUrl ? (
                   <MusicVisualizer audioSrc={voiceUrl} />
                 ) : (
-                  <p className="text-sm text-gray-600">Generate a voice to preview waveform</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Generate a voice to preview waveform
+                  </p>
                 )}
               </TabsContent>
 
+              {/* Mixer Tab */}
               <TabsContent value="mix">
                 <TrackMixer audioUrl={voiceUrl} isMixing={mixing} setMixing={setMixing} />
               </TabsContent>
@@ -149,11 +158,3 @@ const MusicModule = () => {
 };
 
 export default MusicModule;
-
-
-
-
-
-
-
-
