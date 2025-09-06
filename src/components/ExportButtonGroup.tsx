@@ -36,24 +36,24 @@ const ExportButtonGroup: React.FC<ExportButtonGroupProps> = ({ voiceUrl, lyrics 
   useEffect(() => {
     const loadFonts = async () => {
       const [regular, bold, italic, bolditalic] = await Promise.all([
-        import("/fonts/NotoSans-Regular.js"),
-        import("/fonts/NotoSans-Bold.js"),
-        import("/fonts/NotoSans-Italic.js"),
-        import("/fonts/NotoSans-BoldItalic.js"),
+        fetch("/fonts/NotoSans-Regular.js").then((res) => res.text()),
+        fetch("/fonts/NotoSans-Bold.js").then((res) => res.text()),
+        fetch("/fonts/NotoSans-Italic.js").then((res) => res.text()),
+        fetch("/fonts/NotoSans-BoldItalic.js").then((res) => res.text()),
       ]);
 
       const doc = new jsPDF();
 
-      doc.addFileToVFS("NotoSans-Regular.ttf", regular.default);
+      doc.addFileToVFS("NotoSans-Regular.ttf", regular);
       doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
 
-      doc.addFileToVFS("NotoSans-Bold.ttf", bold.default);
+      doc.addFileToVFS("NotoSans-Bold.ttf", bold);
       doc.addFont("NotoSans-Bold.ttf", "NotoSans", "bold");
 
-      doc.addFileToVFS("NotoSans-Italic.ttf", italic.default);
+      doc.addFileToVFS("NotoSans-Italic.ttf", italic);
       doc.addFont("NotoSans-Italic.ttf", "NotoSans", "italic");
 
-      doc.addFileToVFS("NotoSans-BoldItalic.ttf", bolditalic.default);
+      doc.addFileToVFS("NotoSans-BoldItalic.ttf", bolditalic);
       doc.addFont("NotoSans-BoldItalic.ttf", "NotoSans", "bolditalic");
 
       docRef.current = doc;
