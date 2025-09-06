@@ -14,7 +14,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     rollupOptions: {
-      external: ["jspdf", "react-hot-toast"],
+      external: ["jspdf", "jspdf-autotable", "react-hot-toast"],
     },
   },
 });
