@@ -1,7 +1,7 @@
 //src/pages/relationship/Upload.jsx
 
 import React, { useState } from "react";
-import axios from "../api";
+import axios from "@/api";
 
 const UploadPicture = () => {
   const [file, setFile] = useState(null);
