@@ -12,7 +12,12 @@ import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import LoadingSuspense from "@/components/LoadingSuspense"; // ✅ new wrapper
-import ErrorBoundary from "@/components/ErrorBoundary"; // ✅ add this
+import ErrorBoundary from "@/components/ErrorBoundary"; // ✅ error boundary
+
+/* ───────── 🔹 Mobile Debug Console (Eruda) ───────── */
+if (window.location.search.includes("debug=true")) {
+  import("eruda").then((eruda) => eruda.init());
+}
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
