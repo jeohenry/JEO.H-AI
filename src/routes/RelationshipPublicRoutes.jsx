@@ -5,10 +5,10 @@ import { Route } from "react-router-dom";
 import PageWrapper from "@/components/PageWrapper";
 import { slideRight, scaleFade } from "@/config/animations";
 
-import Login from "@/pages/Auth/Login";
-import Register from "@/pages/Auth/Register";
-import PasswordReset from "@/pages/Auth/PasswordReset";
-import LanguageSelector from "@/pages/Auth/LanguageSelector";
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
+import PasswordReset from "@/pages/auth/PasswordReset";
+import LanguageSelector from "@/pages/auth/LanguageSelector";
 
 const RelationshipPublicRoutes = () => (
   <>
