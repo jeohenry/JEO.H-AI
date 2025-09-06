@@ -8,7 +8,7 @@ import App from "@/App";
 import "@/index.css";
 
 // Context providers
-import { ThemeProvider } from "./context/themecontext.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import LoadingSuspense from "@/components/LoadingSuspense"; // ✅ new wrapper
