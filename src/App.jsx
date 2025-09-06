@@ -36,6 +36,7 @@ const HealthAI = lazy(() => import("./modules/HealthAI"));
 const ContentAI = lazy(() => import("./modules/ContentCreator"));
 const AdvertisingAI = lazy(() => import("./modules/Advertising"));
 const MusicModule = lazy(() => import("./modules/MusicModule"));
+const MusicAI = lazy(() => import("./modules/MusicAI")); // 👈 NEW
 const FaceDetectAI = lazy(() => import("./modules/FaceDetection"));
 const ImageClassifyAI = lazy(() => import("./modules/ImageClassifier"));
 const VoiceAssistant = lazy(() => import("./modules/VoiceAssistant"));
@@ -125,6 +126,14 @@ function App() {
                 element={
                   <PageWrapper animation={scaleFade}>
                     <MusicModule />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="/music-ai"
+                element={
+                  <PageWrapper animation={slideUp}>
+                    <MusicAI />
                   </PageWrapper>
                 }
               />
