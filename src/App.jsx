@@ -28,14 +28,14 @@ import DashboardHome from "./pages/DashboardHome";
 import NotFound from "./pages/NotFound";
 
 // 🔹 Lazy-loaded AI Modules
-const ChatAI = lazy(() => import("./modules/Chat/ChatModule"));
+const ChatAI = lazy(() => import("./modules/ChatModule"));
 const TrackingAI = lazy(() => import("./modules/TrackingAI"));
 const PredictAI = lazy(() => import("./modules/Predict"));
 const RecommendAI = lazy(() => import("./modules/Recommend"));
 const HealthAI = lazy(() => import("./modules/HealthAI"));
 const ContentAI = lazy(() => import("./modules/ContentCreator"));
 const AdvertisingAI = lazy(() => import("./modules/Advertising"));
-const MusicAI = lazy(() => import("./modules/MusicModule"));
+const MusicModule = lazy(() => import("./modules/MusicModule"));
 const FaceDetectAI = lazy(() => import("./modules/FaceDetection"));
 const ImageClassifyAI = lazy(() => import("./modules/ImageClassifier"));
 const VoiceAssistant = lazy(() => import("./modules/VoiceAssistant"));
@@ -124,7 +124,7 @@ function App() {
                 path="/music"
                 element={
                   <PageWrapper animation={scaleFade}>
-                    <MusicAI />
+                    <MusicModule />
                   </PageWrapper>
                 }
               />
