@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "@/context/themecontext";
+import { useTheme } from "@/context/ThemeContext";
 import PageWrapper from "@/components/PageWrapper";
 import ScrollFadeIn from "@/components/ScrollFadeIn"; // 👈 Import scroll fade
 
