@@ -28,6 +28,8 @@
     "tailwindcss": "^3.4.1",
     "uuid": "^9.0.0",
     "canvas-confetti": "^1.9.2",
+    "chart.js": "^4.4.1",
+    "react-chartjs-2": "^5.2.0",
 
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-toast": "^1.1.5",
