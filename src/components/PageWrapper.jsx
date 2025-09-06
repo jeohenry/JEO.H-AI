@@ -10,7 +10,7 @@ const PageWrapper = ({ children, animation = defaultPageTransition }) => (
     animate={animation.animate}
     exit={animation.exit}
     transition={animation.transition}
-    className="h-full w-full"
+    className="h-full w-full min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300"
   >
     {/* 👇 Wrap children in ScrollFadeIn */}
     <ScrollFadeIn variant="slideUp" delay={0.1}>
