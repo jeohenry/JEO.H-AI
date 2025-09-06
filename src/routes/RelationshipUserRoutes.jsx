@@ -11,7 +11,7 @@ import MatchMaker from "@/pages/relationship/MatchMaker";
 import Advice from "@/pages/relationship/Advice";
 import GroupVideoCall from "@/pages/relationship/GroupVideoCall";
 import LiveVideoChat from "@/pages/relationship/LiveVideoChat";
-import Notifications from "@/pages/Notifications";
+import Notifications from "@/pages/relationship/Notifications";
 import UploadPicture from "@/pages/relationship/Upload";
 import LiveTranslatorTabs from "@/modules/LiveTranslatorTabs";
 import TranslatedFeed from "@/pages/relationship/TranslatedFeed";
