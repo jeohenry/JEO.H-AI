@@ -2,27 +2,37 @@
 import axios from "axios";
 
 /* ───────── 🌍 BASE URL FROM ENV ───────── */
-// Use the same API base as your hooks
 const BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 /* ───────── 🔗 AXIOS INSTANCE ───────── */
 const API = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
+  timeout: 15000, // prevent hanging requests
 });
 
 /* ───────── 🔐 AUTH INTERCEPTOR ───────── */
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+/* ───────── 🚨 RESPONSE ERROR HANDLER ───────── */
+API.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      // adjust redirect if you're using React Router
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 /* ───────── 🔗 API CALLS ───────── */
+
 // Auth
 export const registerUser = (data) => API.post("/register", data);
 export const loginUser = (data) => API.post("/login", data);
@@ -119,21 +129,3 @@ export const fetchGlobalAnalytics = () => API.get("/admin/analytics/summary");
 
 /* ───────── 🌍 EXPORT AXIOS ───────── */
 export default API;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
