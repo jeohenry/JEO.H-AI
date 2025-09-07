@@ -1,4 +1,14 @@
 // src/main.jsx
+
+// 🌍 Global error & promise rejection tracking
+window.addEventListener("error", (event) => {
+  console.error("🌍 Global error:", event.message, event.error);
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("🌍 Unhandled Promise rejection:", event.reason);
+});
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
