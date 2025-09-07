@@ -14,17 +14,17 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: 5173, // ✅ Default dev port (you can change if needed)
+      port: 5173, // ✅ Default dev port
       open: true, // ✅ Auto-open browser on dev start
       proxy: {
-        // ✅ Example proxy for API requests in development
         "/api": {
           target:
             mode === "development"
               ? "http://localhost:8000" // local backend
-              : "https://your-api.onrender.com", // production backend
+              : "https://your-api.onrender.com", // 🔗 replace with Render backend
           changeOrigin: true,
           secure: false,
+          rewrite: (path) => path.replace(/^\/api/, ""), // ✅ strip `/api`
         },
       },
     },
