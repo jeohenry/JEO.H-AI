@@ -1,14 +1,4 @@
 // src/main.jsx
-
-// 🌍 Global error & promise rejection tracking
-window.addEventListener("error", (event) => {
-  console.error("🌍 Global error:", event.message, event.error);
-});
-
-window.addEventListener("unhandledrejection", (event) => {
-  console.error("🌍 Unhandled Promise rejection:", event.reason);
-});
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -22,6 +12,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import LoadingSuspense from "@/components/LoadingSuspense";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { GlobalErrorProvider } from "@/context/GlobalErrorContext"; // ✅ new
 
 // ✅ Only load Eruda when ?debug=true
 if (window.location.search.includes("debug=true")) {
@@ -38,11 +29,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <LoadingProvider>
             <BrowserRouter>
-              <ErrorBoundary>
-                <LoadingSuspense>
-                  <App />
-                </LoadingSuspense>
-              </ErrorBoundary>
+              <GlobalErrorProvider>
+                <ErrorBoundary>
+                  <LoadingSuspense>
+                    <App />
+                  </LoadingSuspense>
+                </ErrorBoundary>
+              </GlobalErrorProvider>
             </BrowserRouter>
           </LoadingProvider>
         </AuthProvider>
