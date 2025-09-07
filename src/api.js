@@ -1,8 +1,21 @@
 // src/api.js
 import axios from "axios";
 
-/* ───────── 🌍 BASE URL FROM ENV ───────── */
-const BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+/* ───────── 🌍 BASE URL DETECTION ───────── */
+let BASE_URL;
+
+// 1️⃣ Prefer environment variable (Replit, Vercel, Netlify, etc.)
+if (import.meta.env.VITE_API_BASE) {
+  BASE_URL = import.meta.env.VITE_API_BASE;
+
+// 2️⃣ Development (Vite dev server or Replit preview)
+} else if (import.meta.env.DEV) {
+  BASE_URL = "http://localhost:8000"; // Local backend for dev
+
+// 3️⃣ Fallback → your Render backend (safe default for production)
+} else {
+  BASE_URL = "https://your-api.onrender.com"; // 🔗 replace with your actual Render URL
+}
 
 /* ───────── 🔗 AXIOS INSTANCE ───────── */
 const API = axios.create({
@@ -24,7 +37,7 @@ API.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      // adjust redirect if you're using React Router
+      // Adjust redirect if you're using React Router
       window.location.href = "/login";
     }
     return Promise.reject(error);
