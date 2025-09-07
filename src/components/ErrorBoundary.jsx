@@ -1,28 +1,35 @@
 // src/components/ErrorBoundary.jsx
 import React from "react";
+import { useGlobalError } from "@/context/GlobalErrorContext";
 
-export default class ErrorBoundary extends React.Component {
+class ErrorBoundaryInner extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
+    this.resetTimeout = null;
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so fallback UI is shown
     return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Always log to normal console
     console.error("❌ App crashed:", error, errorInfo);
 
-    // If Eruda is enabled, log there too
     if (window.eruda) {
       window.eruda.get("console").log("❌ App crashed:", error, errorInfo);
     }
 
-    // Store component stack for display
     this.setState({ errorInfo });
+
+    // Auto-reset after 10s
+    this.resetTimeout = setTimeout(() => {
+      this.setState({ hasError: false, error: null, errorInfo: null });
+    }, 10000);
+  }
+
+  componentWillUnmount() {
+    if (this.resetTimeout) clearTimeout(this.resetTimeout);
   }
 
   render() {
@@ -48,10 +55,82 @@ export default class ErrorBoundary extends React.Component {
               {this.state.errorInfo.componentStack}
             </details>
           )}
+
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: "1rem",
+              padding: "0.5rem 1rem",
+              borderRadius: "6px",
+              background: "#b91c1c",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🔄 Retry
+          </button>
+          <p style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: "#7f1d1d" }}>
+            Auto-resetting in 10s…
+          </p>
         </div>
       );
     }
 
     return this.props.children;
   }
+}
+
+export default function ErrorBoundary({ children }) {
+  const { error, setError } = useGlobalError();
+  const [autoReset, setAutoReset] = React.useState(null);
+
+  React.useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null); // clear global error after 10s
+      }, 10000);
+      setAutoReset(timer);
+      return () => clearTimeout(timer);
+    }
+  }, [error, setError]);
+
+  if (error) {
+    return (
+      <div
+        style={{
+          padding: "2rem",
+          color: "#b91c1c",
+          fontFamily: "monospace",
+          background: "#fff0f0",
+          borderRadius: "8px",
+        }}
+      >
+        <h2>⚠️ Global Error</h2>
+        <p>
+          <strong>Error:</strong> {error?.message || error?.toString()}
+        </p>
+
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: "1rem",
+            padding: "0.5rem 1rem",
+            borderRadius: "6px",
+            background: "#b91c1c",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          🔄 Retry
+        </button>
+        <p style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: "#7f1d1d" }}>
+          Auto-resetting in 10s…
+        </p>
+      </div>
+    );
+  }
+
+  return <ErrorBoundaryInner>{children}</ErrorBoundaryInner>;
 }
