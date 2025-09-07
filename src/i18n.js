@@ -12,9 +12,15 @@ i18n
     fallbackLng: "en",
     debug: false,
     supportedLngs: ["en", "fr", "es", "yo", "ig", "ha", "zh", "urh"],
+
+    // ✅ Using flat structure: /public/locales/en.json, /public/locales/fr.json, etc.
     backend: {
-      loadPath: "/locales/{{lng}}.json", // served from public/locales
+      loadPath: "/locales/{{lng}}.json",
     },
+
+    ns: ["translation"],        // default namespace name
+    defaultNS: "translation",   // ensures i18n uses these flat files
+
     detection: {
       order: ["localStorage", "navigator", "htmlTag", "querystring", "cookie"],
       caches: ["localStorage"],
