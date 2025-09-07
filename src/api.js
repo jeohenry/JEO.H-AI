@@ -8,11 +8,12 @@ let BASE_URL;
 if (import.meta.env.VITE_API_BASE) {
   BASE_URL = import.meta.env.VITE_API_BASE;
 
-// 2️⃣ Development (Vite dev server or Replit preview)
+// 2️⃣ Development (Vite dev server / Replit preview)
 } else if (import.meta.env.DEV) {
-  BASE_URL = "http://localhost:8000"; // Local backend for dev
+  // Use Vite proxy if configured, otherwise fallback to localhost
+  BASE_URL = import.meta.env.VITE_USE_PROXY ? "/api" : "http://localhost:8000";
 
-// 3️⃣ Fallback → your Render backend (safe default for production)
+// 3️⃣ Fallback → safe default for production
 } else {
   BASE_URL = "https://your-api.onrender.com"; // 🔗 replace with your actual Render URL
 }
