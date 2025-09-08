@@ -1,14 +1,21 @@
-const CACHE_NAME = "jeoh-ai-cache-v2"; // bump version to refresh cache
+const CACHE_NAME = "jeoh-ai-cache-v4"; // 🔹 bump version to refresh cache
 
+// Static assets + main app routes we want to precache
 const STATIC_ASSETS = [
+  "/offline.html", // ✅ offline fallback
   "/manifest.json",
   "/favicon.ico",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/maskable-icon.png",
+
+  // ✅ Precache key app routes
+  "/",
+  "/health",
+  "/dashboard",
 ];
 
-// Install: cache static assets
+// Install: cache static assets + routes
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -20,10 +27,13 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // Always try network first for HTML (prevents stale index.html)
+  // For navigation requests (HTML pages)
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req).catch(() => caches.match("/index.html")) // offline fallback
+      fetch(req).catch(() =>
+        caches.match(req.url.replace(self.location.origin, "")) ||
+        caches.match("/offline.html")
+      )
     );
     return;
   }
@@ -36,7 +46,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Default: try network, fallback to cache (stale-while-revalidate style)
+  // Default: network first, fallback to cache
   event.respondWith(
     fetch(req)
       .then((res) => {
