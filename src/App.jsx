@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";  // 👈 no BrowserRouter here
 import { AnimatePresence } from "framer-motion";
 
 // Layouts
@@ -23,7 +23,7 @@ import NotFound from "./pages/NotFound";
 
 function App() {
   return (
-    <Router>
+    <>
       <RouteChangeHandler />
       <NavBar />
 
@@ -85,7 +85,7 @@ function App() {
           </Routes>
         </Suspense>
       </AnimatePresence>
-    </Router>
+    </>
   );
 }
 
