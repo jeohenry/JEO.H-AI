@@ -44,5 +44,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   </React.StrictMode>
 );
 
-// ❌ Removed service worker (Cloudflare Pages doesn’t generate one automatically)
-// If you want a service worker, add one manually in `public/service-worker.js`
+// ✅ Register Service Worker (only in production builds)
+if (typeof window !== "undefined" && "serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((reg) => console.log("✅ Service Worker registered:", reg.scope))
+      .catch((err) => console.error("❌ Service Worker failed:", err));
+  });
+}
