@@ -15,12 +15,37 @@ export const useLoading = () => useContext(LoadingContext);
 
 export const LoadingProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
+
   const requestCount = useRef(0);
   const suspenseCount = useRef(0);
+  const showTimeRef = useRef(null); // track when loader became visible
+
+  const MIN_VISIBLE_MS = 300; // 👈 tweak this as you like
 
   const updateLoading = useCallback(() => {
-    setLoading(requestCount.current > 0 || suspenseCount.current > 0);
-  }, []);
+    const active = requestCount.current > 0 || suspenseCount.current > 0;
+
+    if (active) {
+      // If turning ON, record start time
+      if (!loading) {
+        showTimeRef.current = Date.now();
+        setLoading(true);
+      }
+    } else {
+      // If turning OFF, enforce min visible time
+      const elapsed = Date.now() - (showTimeRef.current || 0);
+      if (elapsed >= MIN_VISIBLE_MS) {
+        setLoading(false);
+        showTimeRef.current = null;
+      } else {
+        const remaining = MIN_VISIBLE_MS - elapsed;
+        setTimeout(() => {
+          setLoading(false);
+          showTimeRef.current = null;
+        }, remaining);
+      }
+    }
+  }, [loading]);
 
   // --- API loading ---
   const startLoading = useCallback(() => {
