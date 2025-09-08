@@ -1,6 +1,5 @@
-// src/App.jsx
 import React, { Suspense } from "react";
-import { Routes, Route } from "react-router-dom";  // 👈 no BrowserRouter here
+import { Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 // Layouts
@@ -12,7 +11,6 @@ import RouteChangeHandler from "./routes/RouteChangeHandler";
 
 // UI
 import PageWrapper from "./components/PageWrapper";
-import NavBar from "./components/NavBar";
 
 // Config
 import { routesConfig } from "./config/routesConfig";
@@ -25,7 +23,6 @@ function App() {
   return (
     <>
       <RouteChangeHandler />
-      <NavBar />
 
       <AnimatePresence mode="wait">
         <Suspense fallback={null}>
