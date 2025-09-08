@@ -7,15 +7,15 @@ import { useLoading } from "@/context/LoadingContext";
  * 🔹 Handles loading state whenever route changes
  */
 function RouteChangeHandler() {
-  const { setLoading } = useLoading();
+  const { startLoading, stopLoading } = useLoading();
   const location = useLocation();
   const navigationType = useNavigationType();
 
   useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 500);
+    startLoading();
+    const timer = setTimeout(() => stopLoading(), 500); // simulate load complete
     return () => clearTimeout(timer);
-  }, [location, navigationType, setLoading]);
+  }, [location, navigationType, startLoading, stopLoading]);
 
   return null;
 }
