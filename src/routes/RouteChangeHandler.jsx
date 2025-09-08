@@ -5,25 +5,23 @@ import { useLoading } from "@/context/LoadingContext";
 
 /**
  * 🔹 Handles loading state whenever the route changes
+ * Syncs with Axios requests + React rendering
  */
 function RouteChangeHandler() {
   const { startLoading, stopLoading } = useLoading();
   const location = useLocation();
 
   useEffect(() => {
-    let active = true;
+    // Start loader on route change
     startLoading();
 
-    // Simulate loading while the new route is resolving/rendering
-    const timer = setTimeout(() => {
-      if (active) stopLoading();
-    }, 300); // keep short so UI feels snappy
+    // Let React finish rendering, then stop loader
+    const raf = requestAnimationFrame(() => {
+      stopLoading();
+    });
 
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [location.pathname]); // only fire when path changes
+    return () => cancelAnimationFrame(raf);
+  }, [location.pathname, startLoading, stopLoading]);
 
   return null;
 }
