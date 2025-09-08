@@ -12,10 +12,10 @@ import { AuthProvider } from "@/context/AuthContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import LoadingSuspense from "@/components/LoadingSuspense";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { GlobalErrorProvider } from "@/context/GlobalErrorContext"; // ✅ new
+import { GlobalErrorProvider } from "@/context/GlobalErrorContext";
 
-// ✅ Only load Eruda when ?debug=true
-if (window.location.search.includes("debug=true")) {
+// ✅ Load Eruda only in browser when ?debug=true
+if (typeof window !== "undefined" && window.location.search.includes("debug=true")) {
   const script = document.createElement("script");
   script.src = "https://cdn.jsdelivr.net/npm/eruda";
   script.onload = () => window.eruda && window.eruda.init();
@@ -44,16 +44,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   </React.StrictMode>
 );
 
-/* ───────── 🔹 Service Worker Registration ───────── */
-if ("serviceWorker" in navigator && import.meta.env.PROD) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then((reg) => {
-        console.log("✅ Service Worker registered:", reg.scope);
-      })
-      .catch((err) => {
-        console.error("❌ Service Worker registration failed:", err);
-      });
-  });
-}
+// ❌ Removed service worker (Cloudflare Pages doesn’t generate one automatically)
+// If you want a service worker, add one manually in `public/service-worker.js`
