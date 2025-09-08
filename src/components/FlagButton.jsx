@@ -1,6 +1,7 @@
-// 📁 src/components/FlagButton.jsx
+// src/components/FlagButton.jsx
 import React from "react";
 import API from "../api";
+import { Flag } from "lucide-react";
 
 function FlagButton({ contentId, contentType }) {
   const handleFlag = async () => {
@@ -12,16 +13,21 @@ function FlagButton({ contentId, contentType }) {
           content_type: contentType,
           reason,
         });
-        alert("Flag submitted successfully.");
+        alert("🚩 Flag submitted successfully.");
       } catch (err) {
-        alert("Error submitting flag.");
+        console.error("Flag error:", err);
+        alert("⚠️ Error submitting flag.");
       }
     }
   };
 
   return (
-    <button onClick={handleFlag} className="text-red-500 underline text-sm ml-2">
-      Report
+    <button
+      onClick={handleFlag}
+      className="hover:text-red-600 dark:hover:text-red-400 hover:scale-110 transition transform duration-150"
+      title="Report"
+    >
+      <Flag size={20} />
     </button>
   );
 }
