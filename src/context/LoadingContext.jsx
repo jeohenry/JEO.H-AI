@@ -1,56 +1,54 @@
 // src/context/LoadingContext.jsx
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import axios from "axios";
 import Loading from "../components/Loading";
 
 const LoadingContext = createContext();
-
 export const useLoading = () => useContext(LoadingContext);
 
 export const LoadingProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
-  const [requestCount, setRequestCount] = useState(0);
-  const [suspenseCount, setSuspenseCount] = useState(0);
+  const requestCount = useRef(0);
+  const suspenseCount = useRef(0);
 
-  // Start/stop for API
-  const startLoading = useCallback(() => {
-    setRequestCount((prev) => prev + 1);
-    setLoading(true);
+  const updateLoading = useCallback(() => {
+    setLoading(requestCount.current > 0 || suspenseCount.current > 0);
   }, []);
+
+  // --- API loading ---
+  const startLoading = useCallback(() => {
+    requestCount.current += 1;
+    updateLoading();
+  }, [updateLoading]);
 
   const stopLoading = useCallback(() => {
-    setRequestCount((prev) => {
-      const newCount = prev - 1;
-      if (newCount <= 0 && suspenseCount === 0) {
-        setLoading(false);
-        return 0;
-      }
-      return newCount;
-    });
-  }, [suspenseCount]);
+    requestCount.current = Math.max(0, requestCount.current - 1);
+    updateLoading();
+  }, [updateLoading]);
 
-  // Start/stop for Suspense
+  // --- Suspense loading ---
   const startSuspense = useCallback(() => {
-    setSuspenseCount((prev) => prev + 1);
-    setLoading(true);
-  }, []);
+    suspenseCount.current += 1;
+    updateLoading();
+  }, [updateLoading]);
 
   const stopSuspense = useCallback(() => {
-    setSuspenseCount((prev) => {
-      const newCount = prev - 1;
-      if (newCount <= 0 && requestCount === 0) {
-        setLoading(false);
-        return 0;
-      }
-      return newCount;
-    });
-  }, [requestCount]);
+    suspenseCount.current = Math.max(0, suspenseCount.current - 1);
+    updateLoading();
+  }, [updateLoading]);
 
-  // withLoading for manual promises
+  // --- Manual wrapper for promises ---
   const withLoading = useCallback(
     async (promise) => {
+      startLoading();
       try {
-        startLoading();
         return await promise;
       } finally {
         stopLoading();
@@ -59,7 +57,7 @@ export const LoadingProvider = ({ children }) => {
     [startLoading, stopLoading]
   );
 
-  // Axios interceptors
+  // --- Axios interceptors ---
   useEffect(() => {
     const reqInterceptor = axios.interceptors.request.use(
       (config) => {
