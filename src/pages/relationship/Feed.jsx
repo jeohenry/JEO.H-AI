@@ -1,5 +1,4 @@
-//src/pages/relationship/Feed.jsx
-
+// src/pages/relationship/Feed.jsx
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -30,17 +29,24 @@ const Feed = () => {
     fetchPosts();
   }, [i18n.language]);
 
-  // ❤️ Like post
-  const handleLike = async (post_id) => {
+  // ❤️ Toggle like post
+  const handleLike = async (post_id, liked) => {
     try {
-      await axios.post("/relationship/like-post", { user_id: userId, post_id });
+      if (liked) {
+        // Unlike
+        await axios.post("/relationship/unlike-post", { user_id: userId, post_id });
+      } else {
+        // Like
+        await axios.post("/relationship/like-post", { user_id: userId, post_id });
+      }
+
       setPosts((prev) =>
         prev.map((post) =>
-          post.id === post_id ? { ...post, liked: true } : post
+          post.id === post_id ? { ...post, liked: !liked } : post
         )
       );
     } catch (error) {
-      console.error("Error liking post:", error);
+      console.error("Error liking/unliking post:", error);
     }
   };
 
@@ -89,7 +95,7 @@ const Feed = () => {
                     username: "You",
                     text: commentText,
                     created_at: new Date().toISOString(),
-                    voice_url: null, // if you return this from backend, update
+                    voice_url: null, // backend can return real URL
                   },
                 ],
               }
@@ -126,7 +132,7 @@ const Feed = () => {
             >
               <PostCard
                 post={post}
-                onLike={() => handleLike(post.id)}
+                onLike={() => handleLike(post.id, post.liked)}
                 onComment={() => handleComment(post.id)}
                 onSave={() => handleSave(post.id)}
                 onShare={() => handleShare(post.id)}
@@ -212,12 +218,3 @@ const Feed = () => {
 };
 
 export default Feed;
-
-
-
-
-
-
-
-
-
