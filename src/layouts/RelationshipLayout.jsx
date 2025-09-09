@@ -86,41 +86,50 @@ const RelationshipLayout = () => {
       {/* Main content area */}
       <div className="flex-1 flex flex-col">
         <ScrollFadeIn variant="slideDown">
-          <header className="flex justify-between items-center px-5 py-3 bg-white dark:bg-gray-900 shadow sticky top-0 z-30">
-            <div className="flex items-center gap-4">
+          <header className="flex justify-between items-center px-4 md:px-5 py-3 bg-white dark:bg-gray-900 shadow sticky top-0 z-30">
+            <div className="flex items-center gap-2 md:gap-4">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="md:hidden text-xl"
+                className="md:hidden text-xl p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
               >
                 <FaBars />
               </button>
-              <h1 className="text-xl font-semibold text-rose-700 dark:text-pink-300">
+              <h1 className="text-lg md:text-xl font-semibold text-rose-700 dark:text-pink-300">
                 Relationship AI
               </h1>
             </div>
 
-            <div className="flex items-center gap-4">
-              <button onClick={toggleTheme} title="Toggle Theme">
-                {darkMode ? (
-                  <FaSun className="text-yellow-400 text-xl" />
-                ) : (
-                  <FaMoon className="text-xl" />
-                )}
-              </button>
-              <button
-                onClick={toggleTheme}
-                className="flex items-center gap-1 text-sm px-2 py-1 border rounded-full border-pink-400 bg-pink-100 dark:bg-gray-700 dark:border-pink-300 transition"
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Hide theme text on mobile */}
+              <button 
+                onClick={toggleTheme} 
+                title="Toggle Theme"
+                className="hidden md:flex items-center gap-1 text-sm px-2 py-1 border rounded-full border-pink-400 bg-pink-100 dark:bg-gray-700 dark:border-pink-300 transition"
               >
                 {darkMode ? "☀️ Light" : "🌙 Romantic Dark"}
               </button>
+              
+              {/* Mobile-only theme toggle */}
+              <button 
+                onClick={toggleTheme} 
+                title="Toggle Theme"
+                className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+              >
+                {darkMode ? (
+                  <FaSun className="text-yellow-400 text-lg" />
+                ) : (
+                  <FaMoon className="text-lg" />
+                )}
+              </button>
+              
               <button
                 onClick={() => navigate("/relationship/notifications")}
-                className="relative"
+                className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
               >
-                <FaBell className="text-xl" />
+                <FaBell className="text-lg md:text-xl" />
                 {notificationCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-bounce">
-                    {notificationCount}
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-bounce">
+                    {notificationCount > 9 ? '9+' : notificationCount}
                   </span>
                 )}
               </button>
@@ -178,7 +187,7 @@ const RelationshipLayout = () => {
         )}
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
