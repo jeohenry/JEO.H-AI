@@ -13,7 +13,7 @@ import ProtectedAdminRoute from "@/routes/ProtectedAdminRoute";
 import AdminLayout from "@/layouts/AdminLayout";
 
 const RelationshipAdminRoutes = () => (
-  <>
+  <Routes>
     {/* Public Admin Login */}
     <Route
       path="admin/login"
@@ -66,7 +66,7 @@ const RelationshipAdminRoutes = () => (
         }
       />
     </Route>
-  </>
+  </Routes>
 );
 
 export default RelationshipAdminRoutes;
