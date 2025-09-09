@@ -28,7 +28,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <ThemeProvider>
         <AuthProvider>
           <LoadingProvider>
-            <BrowserRouter>
+            <BrowserRouter 
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+              }}
+            >
               <GlobalErrorProvider>
                 <ErrorBoundary>
                   <LoadingSuspense>
