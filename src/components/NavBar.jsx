@@ -7,20 +7,50 @@ import ThemeSwitcher from "./ThemeSwitcher"; // ✅ import
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   const renderNavItem = (item, isChild = false) => {
     if (item.children) {
+      const isDropdownOpen = activeDropdown === item.name;
       return (
-        <div key={item.name} className="relative group">
-          <button className="flex items-center space-x-2 px-4 py-2 w-full text-left 
-                             hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">
+        <div key={item.name} className="relative">
+          <button 
+            className="flex items-center space-x-2 px-4 py-2 w-full text-left 
+                       hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition"
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveDropdown(isDropdownOpen ? null : item.name);
+            }}
+          >
             {item.icon}
             <span>{item.name}</span>
+            <svg 
+              className={`ml-auto w-4 h-4 transition-transform duration-200 ${
+                isDropdownOpen ? 'rotate-180' : ''
+              }`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
-          <div className="absolute left-0 mt-2 hidden group-hover:block 
-                          bg-white dark:bg-gray-900 shadow-lg rounded-xl">
-            {item.children.map((child) => renderNavItem(child, true))}
-          </div>
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, y: -10, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute left-0 mt-2 w-full min-w-[200px] 
+                          bg-white dark:bg-gray-900 shadow-lg rounded-xl 
+                          border border-gray-200 dark:border-gray-700 z-50
+                          overflow-hidden"
+              >
+                {item.children.map((child) => renderNavItem(child, true))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }
@@ -35,7 +65,10 @@ const NavBar = () => {
            ${isActive ? "bg-gray-300 dark:bg-gray-800 font-semibold" : ""} 
            ${isChild ? "pl-8" : ""}`
         }
-        onClick={() => setIsOpen(false)}
+        onClick={() => {
+          setIsOpen(false);
+          setActiveDropdown(null);
+        }}
       >
         {item.icon}
         <span>{item.name}</span>
