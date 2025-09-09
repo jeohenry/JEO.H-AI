@@ -19,6 +19,7 @@ import ScrollFadeIn from "@/components/ScrollFadeIn"; // 👈 Import scroll fade
 
 const DashboardLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { toggleTheme, theme } = useTheme();
   const location = useLocation();
@@ -36,19 +37,42 @@ const DashboardLayout = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex h-screen bg-background text-foreground overflow-hidden relative">
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <motion.aside
         initial={{ width: collapsed ? 80 : 240 }}
         animate={{ width: collapsed ? 80 : 240 }}
         transition={{ duration: 0.3 }}
-        className="bg-white dark:bg-gray-900 border-r shadow-md flex-shrink-0"
+        className={`
+          bg-white dark:bg-gray-900 border-r shadow-md flex-shrink-0 z-50
+          md:relative fixed h-full
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          transition-transform duration-300 ease-in-out
+        `}
       >
         <div className="p-4 flex justify-between items-center">
           <h1 className="text-lg font-bold text-pink-600 dark:text-pink-300">
             {collapsed ? "JH" : "JEO.H AI"}
           </h1>
-          <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                setMobileMenuOpen(false);
+              } else {
+                setCollapsed(!collapsed);
+              }
+            }}
+          >
             <Menu className="w-5 h-5" />
           </Button>
         </div>
@@ -81,6 +105,16 @@ const DashboardLayout = () => {
         {/* Topbar */}
         <div className="flex items-center justify-between px-4 py-2 border-b bg-white dark:bg-gray-800 shadow-sm">
           <div className="flex items-center gap-4">
+            {/* Mobile Menu Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            
             <ScrollFadeIn variant="fade" delay={0.1}>
               <Button variant="ghost" onClick={toggleTheme}>
                 {theme === "dark" ? <Sun /> : <Moon />}
@@ -134,7 +168,7 @@ const DashboardLayout = () => {
         </div>
 
         {/* Animated Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <PageWrapper animation="pageFade" key={location.pathname}>
             <ScrollFadeIn variant="slideUp" delay={0.1}>
               <Outlet />
@@ -146,4 +180,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default DashboardLayout
