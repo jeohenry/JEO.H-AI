@@ -13,7 +13,7 @@ const UploadPicture = () => {
     formData.append("user_id", userId);
 
     try {
-      const res = await axios.post("/api/relationship/upload", formData, {
+      const res = await axios.post("/relationship/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("Upload successful!");
