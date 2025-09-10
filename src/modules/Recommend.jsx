@@ -1,7 +1,7 @@
 //src/modules/Recommend.jsx
 
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "@/api";
 import PageWrapper from "../components/PageWrapper";
 import RecommendCard from "../components/RecommendCard";
 import { motion } from "framer-motion";
@@ -19,7 +19,7 @@ const Recommend = () => {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:8000/api/recommend/", {
+      const res = await axios.post("/recommend", {
         interest,
       });
       setRecommendations(res.data.recommendations || []);
@@ -84,9 +84,5 @@ const Recommend = () => {
 };
 
 export default Recommend;
-
-
-
-
 
 
