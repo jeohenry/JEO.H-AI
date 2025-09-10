@@ -8,7 +8,7 @@ const Notifications = () => {
   const user_id = localStorage.getItem("user_id");
 
   useEffect(() => {
-    axios.get(`/api/relationship/notifications/${user_id}`)
+    axios.get(`/relationship/notifications/${user_id}`)
       .then(res => setNotes(res.data));
   }, []);
 
