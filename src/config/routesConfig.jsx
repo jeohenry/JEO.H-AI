@@ -109,10 +109,4 @@ export const routesConfig = [
     component: RelationshipRoutes,
     animation: pageFade,
   },
-  {
-    name: "Dashboard",
-    path: "/dashboard",
-    icon: <FaRobot />,
-    component: null, // handled separately with DashboardLayout
-  },
 ];
