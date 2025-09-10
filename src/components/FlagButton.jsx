@@ -1,6 +1,6 @@
 // src/components/FlagButton.jsx
 import React from "react";
-import API from "../api";
+import API from "@/api";
 import { Flag } from "lucide-react";
 
 function FlagButton({ contentId, contentType }) {
@@ -8,7 +8,7 @@ function FlagButton({ contentId, contentType }) {
     const reason = prompt("Why are you flagging this content?");
     if (reason) {
       try {
-        await API.post("/api/flag", {
+        await API.post("/flag", {
           content_id: contentId,
           content_type: contentType,
           reason,
