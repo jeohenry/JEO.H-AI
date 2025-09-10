@@ -1,7 +1,7 @@
 //src/modules/TrackingAI.jsx
 
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '@/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +16,7 @@ const TrackingAI = () => {
     if (!target) return;
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:8000/api/tracking/query', { target });
+      const res = await axios.post('/tracking/query', { target });
       setStatus(res.data.status);
     } catch (err) {
       console.error(err);
@@ -31,7 +31,7 @@ const TrackingAI = () => {
       <Card>
         <CardContent className="space-y-4 mt-4">
           <Input
-            placeholder="Enter what to track (e.g., John Doe, Shipment A123)"
+            placeholder="Track anything from where you are, become and instant tracker (e.g., John Doe, Shipment A123)"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
           />
