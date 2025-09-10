@@ -14,14 +14,14 @@ const MatchMaker = () => {
     if (!user_id) return;
 
     axios
-      .get(`/api/relationship/match/compatible/${user_id}`)
+      .get(`/relationship/match/compatible/${user_id}`)
       .then((res) => setMatches(res.data.matches))
       .catch((err) => console.error("Error fetching matches", err));
   }, []);
 
   const sendSignalToUser = async (receiver_id) => {
     try {
-      await axios.post("/api/relationship/match/send", {
+      await axios.post("/relationship/match/send", {
         sender_id: user_id,
         receiver_id,
         signal_message: "I feel we're a perfect match! 💕",
