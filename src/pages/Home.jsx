@@ -39,8 +39,8 @@ export default function Home() {
           <Link to="/chat">
             <Button size="lg" className="w-full sm:w-auto">Start Chatting</Button>
           </Link>
-          <Link to="/dashboard">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">View Dashboard</Button>
+          <Link to="/relationship/profile">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto">View Profile</Button>
           </Link>
         </div>
       </motion.div>
@@ -70,14 +70,4 @@ export default function Home() {
                   <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">{feature.name}</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">{feature.description}</p>
                   <Link to={feature.path} className="w-full">
-                    <Button variant="outline" className="w-full">Try Now</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+                    <Button v
