@@ -67,43 +67,59 @@ const ChatModule = () => {
   return (
     <PageWrapper>
       <motion.div
-        className="p-6 max-w-3xl mx-auto space-y-6"
+        className="p-4 md:p-6 max-w-4xl mx-auto space-y-4 md:space-y-6 h-full"
         variants={slideUp}
         initial="initial"
         animate="animate"
         exit="exit"
       >
-        <h2 className="text-2xl font-bold text-center text-indigo-700">
+        <h2 className="text-xl md:text-2xl font-bold text-center text-indigo-700 dark:text-indigo-400">
           💬 Chat with JEO.H AI
         </h2>
 
-        <Card className="h-[500px] shadow-md">
-          <CardContent className="flex flex-col h-full">
-            <ScrollArea className="flex-1 overflow-y-auto pr-2 space-y-2">
+        <Card className="h-[60vh] md:h-[500px] shadow-md">
+          <CardContent className="flex flex-col h-full p-3 md:p-6">
+            <ScrollArea className="flex-1 overflow-y-auto pr-2 space-y-3">
               {messages.map((msg, index) => (
-                <div
+                <motion.div
                   key={index}
-                  className={`rounded-xl px-4 py-2 text-sm max-w-[80%] whitespace-pre-wrap ${
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className={`rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base max-w-[85%] md:max-w-[80%] whitespace-pre-wrap ${
                     msg.from === 'user'
-                      ? 'ml-auto bg-blue-100 text-right'
-                      : 'bg-gray-200 text-left'
+                      ? 'ml-auto bg-blue-500 text-white text-right'
+                      : 'bg-gray-200 dark:bg-gray-700 text-left dark:text-white'
                   }`}
                 >
                   {msg.text}
-                </div>
+                </motion.div>
               ))}
+              {loading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-gray-200 dark:bg-gray-700 rounded-xl px-3 md:px-4 py-2 md:py-3 text-sm md:text-base max-w-[80%] flex items-center gap-2"
+                >
+                  <div className="animate-pulse">🤖 AI is thinking...</div>
+                </motion.div>
+              )}
             </ScrollArea>
 
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-3 md:mt-4">
               <Input
                 placeholder="Type your message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="flex-1"
+                className="flex-1 text-sm md:text-base"
               />
-              <Button onClick={handleAIStream} disabled={loading}>
-                {loading ? '...' : 'Send'}
+              <Button 
+                onClick={handleAIStream} 
+                disabled={loading}
+                className="px-3 md:px-4 text-sm md:text-base"
+              >
+                {loading ? '⏳' : '📤'}
               </Button>
             </div>
           </CardContent>
@@ -114,16 +130,5 @@ const ChatModule = () => {
 };
 
 export default ChatModule;
-
-
-
-
-
-
-
-
-
-
-
 
 
