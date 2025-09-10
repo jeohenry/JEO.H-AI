@@ -189,7 +189,7 @@ const Advice = () => {
               placeholder="Ask your relationship question..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full p-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-4 border-2 border-pink-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 dark:border-pink-600 bg-white dark:bg-gray-900 rounded-lg shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800 dark:text-white"
             />
             <button
               onClick={getAdvice}
@@ -293,28 +293,4 @@ const Advice = () => {
                 <span className="text-gray-700 dark:text-white">
                   {toneResult}
                 </span>
-              </motion.div>
-            )}
-          </section>
-        </motion.div>
-      </PageWrapper>
-    </div>
-  );
-};
-
-export default Advice;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
