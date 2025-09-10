@@ -30,7 +30,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/register", form);
+      await axios.post("/register", form);
       alert("Registration successful. Please check your email.");
       navigate("/relationship/login");
     } catch (err) {
@@ -53,7 +53,7 @@ const Register = () => {
           placeholder="Full Name"
           value={form.name}
           onChange={handleChange}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border-2 border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 mb-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
           required
         />
 
@@ -63,7 +63,7 @@ const Register = () => {
           placeholder="Username"
           value={form.username}
           onChange={handleChange}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border-2 border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 mb-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
           required
         />
 
@@ -73,7 +73,7 @@ const Register = () => {
           placeholder="Email"
           value={form.email}
           onChange={handleChange}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border-2 border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 mb-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
           required
         />
 
@@ -83,7 +83,7 @@ const Register = () => {
           placeholder="Password"
           value={form.password}
           onChange={handleChange}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border-2 border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 mb-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
           required
         />
 
