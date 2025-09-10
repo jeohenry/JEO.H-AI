@@ -21,7 +21,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/login", { email, password });
+      const res = await axios.post("/login", { email, password });
       localStorage.setItem("user_id", res.data.user_id);
       navigate("/relationship/Feed");
     } catch (err) {
@@ -43,7 +43,7 @@ const Login = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-3 mb-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
           required
         />
 
@@ -52,7 +52,7 @@ const Login = () => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-3 mb-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
           required
         />
 
