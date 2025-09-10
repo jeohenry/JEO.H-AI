@@ -22,11 +22,13 @@ export const AuthProvider = ({ children }) => {
     axios
       .get(`/relationship/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
+        skipLoading: true, // Prevent loading indicator for this auth check
       })
       .then((res) => {
         setUser({ ...res.data, token }); // store role + token
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log("🔐 Auth check failed:", err.message);
         setUser(null);
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
