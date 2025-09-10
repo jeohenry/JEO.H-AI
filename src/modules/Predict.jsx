@@ -14,7 +14,8 @@ export default function Predict() {
     if (!input.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/predict/', {
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,7 +36,7 @@ export default function Predict() {
       <Card>
         <CardContent className="space-y-4">
           <Textarea
-            placeholder="Enter your input data for prediction..."
+            placeholder="Ask and get the best and most accurate predictions on sport,forex trade etc and even more..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="w-full"
