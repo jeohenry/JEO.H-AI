@@ -67,7 +67,8 @@ export function useStreamAI({ userId = "guest", endpoint = DEFAULT_STREAM_ENDPOI
       } catch (err) {
         if (signal.aborted) {
           setError("Request aborted.");
-        } else if (retryCount < 2) {
+        } else if (retryCount < 2 && !err.message.includes("Server returned an error")) {
+          // Only retry for network errors, not server errors
           streamAIResponse({
             prompt,
             onData,
@@ -76,7 +77,10 @@ export function useStreamAI({ userId = "guest", endpoint = DEFAULT_STREAM_ENDPOI
             retryCount: retryCount + 1,
           });
         } else {
-          setError(err.message);
+          const errorMessage = err.message.includes("fetch") 
+            ? "AI service is currently offline. Please check if the backend is running." 
+            : err.message;
+          setError(errorMessage);
           if (onError) onError(err);
         }
       } finally {
