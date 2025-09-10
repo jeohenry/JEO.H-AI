@@ -26,7 +26,7 @@ function SmartChat() {
     <div className="p-6 max-w-xl mx-auto bg-white rounded-xl shadow-md space-y-4">
       <h2 className="text-xl font-semibold">JEO.H Smart AI Chat</h2>
       <textarea
-        className="w-full p-2 border rounded"
+        className="w-full p-4 border-2 border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
         rows={4}
         placeholder="Ask JEO.H anything..."
         value={prompt}
@@ -38,13 +38,3 @@ function SmartChat() {
         disabled={loading}
       >
         {loading ? "Thinking..." : "Send"}
-      </button>
-      <div className="mt-4 p-3 bg-gray-100 rounded">
-        <strong>JEO.H:</strong>
-        <p>{response}</p>
-      </div>
-    </div>
-  );
-}
-
-export default SmartChat;
