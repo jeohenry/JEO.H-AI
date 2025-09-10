@@ -20,7 +20,7 @@ export const LoadingProvider = ({ children }) => {
   const suspenseCount = useRef(0);
   const showTimeRef = useRef(null); // track when loader became visible
 
-  const MIN_VISIBLE_MS = 300; // 👈 tweak this as you like
+  const MIN_VISIBLE_MS = 150; // Reduced for better UX
 
   const updateLoading = useCallback(() => {
     const active = requestCount.current > 0 || suspenseCount.current > 0;
@@ -123,5 +123,9 @@ export const LoadingProvider = ({ children }) => {
         withLoading,
       }}
     >
-      {loading && (
+      {loading && <Loading />}
+      {children}
+    </LoadingContext.Provider>
+  );
+};
   
