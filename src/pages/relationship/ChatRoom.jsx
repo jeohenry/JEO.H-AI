@@ -29,7 +29,7 @@ const ChatRoom = () => {
     if (!userId) return navigate("/relationship/login");
 
     axios
-      .get(`/api/relationship/match/compatible/${userId}`)
+      .get(`/relationship/match/compatible/${userId}`)
       .then((res) => setMatches(res.data.matches));
   }, []);
 
@@ -117,7 +117,7 @@ const ChatRoom = () => {
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="Ask something smart..."
-              className="flex-1 border px-4 py-2 rounded"
+              className="flex-1 border-2 border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 px-4 py-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
             />
             <button
               type="submit"
@@ -137,28 +137,4 @@ const ChatRoom = () => {
 
           {aiError && <p className="text-red-500">⚠️ {aiError}</p>}
           {aiResponse && (
-            <div className="bg-purple-50 border border-purple-200 p-4 rounded mt-2 shadow-sm">
-              <p className="text-purple-800 whitespace-pre-wrap">{aiResponse}</p>
-              <button
-                onClick={resetAI}
-                className="mt-2 text-sm text-purple-600 underline hover:text-purple-800"
-              >
-                Clear
-              </button>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    </PageWrapper>
-  );
-};
-
-export default ChatRoom;
-
-
-
-
-
-
-
-
+            <di
