@@ -197,24 +197,4 @@ body {
     position: relative;
   }
 
-  .sidebar.open,
-  .sidebar.collapsed {
-    transform: translateX(0);
-  }
-
-  .main-content {
-    margin-left: var(--sidebar-width);
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
+ 
