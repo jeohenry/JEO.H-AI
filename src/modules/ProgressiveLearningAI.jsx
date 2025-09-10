@@ -2,7 +2,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ const ProgressiveLearningAI = () => {
   const [editText, setEditText] = useState('');
 
   const fetchTrainings = async () => {
-    const res = await axios.get('http://localhost:8000/api/progressive-ai/trainings');
+    const res = await axios.get('/progressive-ai/trainings');
     setTrainingList(res.data);
   };
 
@@ -32,7 +32,7 @@ const ProgressiveLearningAI = () => {
     if (!askInput.trim()) return;
     setLoadingAsk(true);
     try {
-      const res = await axios.post('http://localhost:8000/api/progressive-ai/query', {
+      const res = await axios.post('/progressive-ai/query', {
         input: askInput,
       });
       setResponse(res.data?.response || 'No response.');
@@ -44,7 +44,7 @@ const ProgressiveLearningAI = () => {
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/api/progressive-ai/train/${id}`);
+    await axios.delete(`/progressive-ai/train/${id}`);
     fetchTrainings();
   };
 
@@ -54,14 +54,14 @@ const ProgressiveLearningAI = () => {
   };
 
   const handleSaveEdit = async (id) => {
-    await axios.put(`http://localhost:8000/api/progressive-ai/train/${id}`, { text: editText });
+    await axios.put(`/progressive-ai/train/${id}`, { text: editText });
     setEditId(null);
     setEditText('');
     fetchTrainings();
   };
 
   const handleExport = async () => {
-    const res = await axios.get('http://localhost:8000/api/progressive-ai/export');
+    const res = await axios.get('/progressive-ai/export');
     const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
     saveAs(blob, 'progressive_ai_memory.json');
   };
@@ -71,7 +71,7 @@ const ProgressiveLearningAI = () => {
     if (!file) return;
     const formData = new FormData();
     formData.append('file', file);
-    await axios.post('http://localhost:8000/api/progressive-ai/import', formData, {
+    await axios.post('/progressive-ai/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     fetchTrainings();
@@ -151,13 +151,4 @@ const ProgressiveLearningAI = () => {
 
       {response && (
         <Card className="bg-gray-100">
-          <CardContent className="mt-4 text-sm">
-            <strong>AI Response:</strong> {response}
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-export default ProgressiveLearningAI;
+          <CardContent className="mt-4 text-s
