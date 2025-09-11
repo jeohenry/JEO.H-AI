@@ -1,4 +1,4 @@
-//src/modules/MusicAI.tsx
+// src/modules/MusicAI.tsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,8 @@ import { Loader2 } from 'lucide-react';
 import PageWrapper from '@/components/PageWrapper';
 import { motion } from 'framer-motion';
 import { slideUp } from '@/config/animations';
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const MusicAI = () => {
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -31,7 +33,7 @@ const MusicAI = () => {
     formData.append('file', audioFile);
 
     try {
-      const res = await axios.post('http://localhost:8000/api/music-analyze/', formData, {
+      const res = await axios.post(`${API_BASE}/music/analyze/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setResult(res.data);
@@ -49,13 +51,20 @@ const MusicAI = () => {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="w-full max-w-3xl mx-auto p-6 space-y-6"
+        className="w-full max-w-3xl mx-auto p-4 sm:p-6 lg:p-10 space-y-6"
       >
-        <h2 className="text-3xl font-bold text-center text-indigo-600">🎶 Music AI Analyzer</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-indigo-600 dark:text-indigo-400">
+          🎶 Music AI Analyzer
+        </h2>
 
-        <Card className="shadow-md">
+        <Card className="shadow-md border border-gray-200 dark:border-gray-700">
           <CardContent className="p-4 space-y-4">
-            <input type="file" accept="audio/*" onChange={handleAudioChange} className="w-full" />
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={handleAudioChange}
+              className="w-full text-sm text-gray-700 dark:text-gray-200"
+            />
             {previewURL && (
               <audio controls src={previewURL} className="w-full mt-2 rounded shadow" />
             )}
@@ -70,9 +79,11 @@ const MusicAI = () => {
         </Card>
 
         {result && (
-          <Card className="shadow-lg bg-blue-50">
+          <Card className="shadow-lg bg-blue-50 dark:bg-gray-800 border border-blue-200 dark:border-gray-700">
             <CardContent className="p-4 space-y-2">
-              <h3 className="text-xl font-semibold text-blue-700">🎧 Music Analysis Result</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-blue-700 dark:text-blue-400">
+                🎧 Music Analysis Result
+              </h3>
               <p><strong>🎵 Genre:</strong> {result.genre}</p>
               <p><strong>😌 Mood:</strong> {result.mood}</p>
               <p>
@@ -88,11 +99,3 @@ const MusicAI = () => {
 };
 
 export default MusicAI;
-
-
-
-
-
-
-
-
