@@ -1,6 +1,5 @@
 //src/pages/admin/AdminAnalytics.jsx
 
-
 import React, { useEffect, useState } from "react";
 import { Line, Pie } from "react-chartjs-2";
 import { fetchAnalyticsSummary } from "@/api";
