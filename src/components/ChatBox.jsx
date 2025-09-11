@@ -27,7 +27,7 @@ const ChatBox = ({ messages, onSend }) => {
       </div>
       <div className="p-2 border-t bg-white flex gap-2">
         <input
-          className="flex-1 border p-2 rounded"
+          className="flex-1 border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500"
           placeholder="Type a message..."
           value={text}
           onChange={(e) => setText(e.target.value)}
