@@ -1,103 +1,236 @@
-//src/modules/HealthAI.tsx
+// src/modules/HealthAI.tsx
 
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileDown } from 'lucide-react';
 import PageWrapper from '../components/PageWrapper';
 import { motion } from 'framer-motion';
 import { slideUp } from '../config/animations';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { saveAs } from 'file-saver';
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const HealthAI = () => {
   const [symptoms, setSymptoms] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [prescription, setPrescription] = useState('');
   const [healthAdvice, setHealthAdvice] = useState('');
+  const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [loadingAdvice, setLoadingAdvice] = useState(false);
 
-  const handleDiagnose = async () => {
+  /**
+   * 🔹 Unified streaming handler (diagnosis + prescription + advice + analytics)
+   */
+  const handleUnifiedStream = async () => {
     if (!symptoms.trim()) return;
     setLoading(true);
     setDiagnosis('');
     setPrescription('');
+    setHealthAdvice('');
+    setAnalytics(null);
+
     try {
-      const res = await axios.post('http://localhost:8000/api/health/', { symptoms });
-      setDiagnosis(res.data.diagnosis);
-      setPrescription(res.data.prescription);
-    } catch (error) {
-      setDiagnosis('❌ Error analyzing symptoms.');
-      setPrescription('');
+      const res = await fetch(`${API_BASE}/health/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symptoms }),
+      });
+
+      if (!res.body) throw new Error("No response body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      let diagnosisBuffer = "";
+      let prescriptionBuffer = "";
+      let adviceBuffer = "";
+      let analyticsBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n\n");
+
+        for (let line of lines) {
+          if (!line.startsWith("data:")) continue;
+          const payload = JSON.parse(line.replace("data: ", ""));
+
+          if (payload.section === "diagnosis") {
+            diagnosisBuffer += payload.content + " ";
+            setDiagnosis(diagnosisBuffer);
+          }
+          if (payload.section === "prescription") {
+            prescriptionBuffer += payload.content + " ";
+            setPrescription(prescriptionBuffer);
+          }
+          if (payload.section === "advice") {
+            adviceBuffer += payload.content + " ";
+            setHealthAdvice(adviceBuffer);
+          }
+          if (payload.section === "analytics") {
+            analyticsBuffer += payload.content + " ";
+            try {
+              setAnalytics(JSON.parse(analyticsBuffer));
+            } catch {
+              setAnalytics(analyticsBuffer);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      setDiagnosis("❌ Error streaming results.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAdvice = async () => {
-    if (!symptoms.trim()) return;
-    setLoadingAdvice(true);
-    setHealthAdvice('');
-    try {
-      const res = await axios.post('http://localhost:8000/api/health-diagnosis/', { symptoms });
-      setHealthAdvice(res.data.health_advice);
-    } catch (error) {
-      setHealthAdvice('❌ Error retrieving AI health advice.');
-    } finally {
-      setLoadingAdvice(false);
-    }
+  /**
+   * 🔹 Export report as PDF
+   */
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const now = new Date().toLocaleString();
+
+    doc.setFont("helvetica", "bold").setFontSize(20);
+    doc.text("📊 AI Health Report", 20, 20);
+
+    doc.setFont("helvetica", "normal").setFontSize(10);
+    doc.text(`Date: ${now}`, 20, 30);
+    doc.text("Symptoms:", 20, 38);
+    doc.text(doc.splitTextToSize(symptoms || "N/A", 170), 20, 44);
+
+    let y = 70;
+    const addSection = (title: string, content: string) => {
+      if (!content) return;
+      doc.setFontSize(14).setFont("helvetica", "bold");
+      doc.text(title, 20, y);
+      y += 10;
+      doc.setFontSize(12).setFont("helvetica", "normal");
+      doc.text(doc.splitTextToSize(content, 170), 20, y);
+      y += 20;
+    };
+
+    addSection("🩺 Diagnosis:", diagnosis);
+    addSection("💊 Prescription:", prescription);
+    addSection("💡 AI Health Advice:", healthAdvice);
+    addSection("📈 Analytics Summary:", typeof analytics === "string" ? analytics : JSON.stringify(analytics, null, 2));
+
+    doc.save("AI_Health_Report.pdf");
+  };
+
+  /**
+   * 🔹 Export report as Word Docx
+   */
+  const handleExportDocx = async () => {
+    const now = new Date().toLocaleString();
+    const children: Paragraph[] = [
+      new Paragraph({ children: [new TextRun({ text: "📊 AI Health Report", bold: true, size: 32 })] }),
+      new Paragraph(`Date: ${now}`),
+      new Paragraph({ children: [new TextRun({ text: "Symptoms:", bold: true })] }),
+      new Paragraph(symptoms || "N/A"),
+    ];
+
+    const addSection = (title: string, content: string) => {
+      if (!content) return;
+      children.push(
+        new Paragraph({ children: [new TextRun({ text: title, bold: true, size: 28 })] }),
+        new Paragraph(content)
+      );
+    };
+
+    addSection("🩺 Diagnosis:", diagnosis);
+    addSection("💊 Prescription:", prescription);
+    addSection("💡 AI Health Advice:", healthAdvice);
+    addSection("📈 Analytics Summary:", typeof analytics === "string" ? analytics : JSON.stringify(analytics, null, 2));
+
+    const doc = new Document({ sections: [{ children }] });
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "AI_Health_Report.docx");
   };
 
   return (
     <PageWrapper>
       <motion.div
-        className="p-6 w-full max-w-3xl mx-auto space-y-6"
+        className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-6"
         variants={slideUp}
         initial="initial"
         animate="animate"
         exit="exit"
       >
+        {/* Input Form */}
         <Card className="shadow-lg">
           <CardContent className="space-y-5 p-6">
-            <h2 className="text-2xl font-bold text-center text-blue-700">
-              🩺 AI Health Diagnosis & Prescription
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-blue-700">
+              🩺 AI Health Assistant
             </h2>
 
             <Textarea
               placeholder="📝 Describe your symptoms in detail..."
               value={symptoms}
               onChange={(e) => setSymptoms(e.target.value)}
-              className="min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="min-h-[120px] w-full bg-white text-black placeholder-gray-500
+                         dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
             />
 
-            <div className="flex flex-col md:flex-row gap-2 pt-2">
-              <Button onClick={handleDiagnose} disabled={loading} className="w-full">
-                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : '🧬 Get Diagnosis & Prescription'}
-              </Button>
-              <Button onClick={handleAdvice} disabled={loadingAdvice} className="w-full">
-                {loadingAdvice ? <Loader2 className="animate-spin w-4 h-4" /> : '🤖 Get AI Health Advice'}
+            <div className="flex justify-center pt-2">
+              <Button onClick={handleUnifiedStream} disabled={loading} className="w-full">
+                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : '🚀 Get Full AI Health Report'}
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {(diagnosis || prescription) && (
-          <Card className="bg-green-50 shadow-md border-green-200">
-            <CardContent className="p-5 space-y-3">
-              <h3 className="text-xl font-semibold text-green-800">📋 Diagnosis</h3>
-              <p>{diagnosis}</p>
-              <h3 className="text-xl font-semibold text-blue-800">💊 Prescription</h3>
-              <p>{prescription}</p>
-            </CardContent>
-          </Card>
-        )}
+        {/* Report Section */}
+        {(diagnosis || prescription || healthAdvice || analytics) && (
+          <Card className="bg-gradient-to-br from-green-50 via-yellow-50 to-blue-50 shadow-lg border">
+            <CardContent className="p-5 space-y-4">
+              <h3 className="text-2xl font-bold text-center text-indigo-700">📊 AI Health Report</h3>
 
-        {healthAdvice && (
-          <Card className="bg-yellow-50 shadow-md border-yellow-200">
-            <CardContent className="p-5 space-y-3">
-              <h3 className="text-xl font-semibold text-yellow-800">💡 AI Health Advice</h3>
-              <p>{healthAdvice}</p>
+              {diagnosis && (
+                <div>
+                  <h4 className="text-lg font-semibold text-green-700">🩺 Diagnosis</h4>
+                  <p className="whitespace-pre-wrap">{diagnosis}</p>
+                </div>
+              )}
+
+              {prescription && (
+                <div>
+                  <h4 className="text-lg font-semibold text-blue-700">💊 Prescription</h4>
+                  <p className="whitespace-pre-wrap">{prescription}</p>
+                </div>
+              )}
+
+              {healthAdvice && (
+                <div>
+                  <h4 className="text-lg font-semibold text-yellow-700">💡 AI Health Advice</h4>
+                  <p className="whitespace-pre-wrap">{healthAdvice}</p>
+                </div>
+              )}
+
+              {analytics && (
+                <div>
+                  <h4 className="text-lg font-semibold text-indigo-700">📈 Analytics Summary</h4>
+                  <pre className="whitespace-pre-wrap text-sm">
+                    {typeof analytics === "string" ? analytics : JSON.stringify(analytics, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              {/* Export Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <Button onClick={handleExportPDF} className="flex-1 bg-red-500 hover:bg-red-600">
+                  <FileDown className="w-4 h-4 mr-2" /> Export PDF
+                </Button>
+                <Button onClick={handleExportDocx} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <FileDown className="w-4 h-4 mr-2" /> Export Word
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -107,9 +240,3 @@ const HealthAI = () => {
 };
 
 export default HealthAI;
-
-
-
-
-
-
