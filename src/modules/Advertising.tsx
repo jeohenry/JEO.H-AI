@@ -10,6 +10,9 @@ import PageWrapper from '../components/PageWrapper';
 import { motion } from 'framer-motion';
 import { slideUp } from '../config/animations';
 
+// ✅ Use environment variable
+const API_BASE = `${import.meta.env.VITE_API_BASE}/advertising`;
+
 const Advertising = () => {
   const [formData, setFormData] = useState({
     product: '',
@@ -25,11 +28,11 @@ const Advertising = () => {
     videoUrl: ''
   });
 
-  const [adId, setAdId] = useState(null);
+  const [blobKey, setBlobKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
@@ -43,7 +46,7 @@ const Advertising = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/api/advertising/', {
+      const response = await axios.post(`${API_BASE}/`, {
         product,
         audience,
         media_type
@@ -57,7 +60,7 @@ const Advertising = () => {
         videoUrl: response.data.video_url || ''
       });
 
-      setAdId(response.data.id || null);
+      setBlobKey(response.data.blob_key || null);
     } catch (err) {
       console.error(err);
       setError('❌ Something went wrong. Please try again.');
@@ -69,7 +72,7 @@ const Advertising = () => {
   const clearAll = () => {
     setFormData({ product: '', audience: '', media_type: 'text' });
     setResult({ copy: '', strategy: '', pitch: '', imageUrl: '', videoUrl: '' });
-    setAdId(null);
+    setBlobKey(null);
     setError('');
   };
 
@@ -86,24 +89,28 @@ const Advertising = () => {
           📢 Advertising AI Generator
         </h2>
 
+        {/* Inputs */}
         <div className="grid md:grid-cols-3 gap-4">
           <Input
             name="product"
             placeholder="🧪 Product or service"
             value={formData.product}
             onChange={handleChange}
+            className="bg-white text-black placeholder-gray-500 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
           />
           <Input
             name="audience"
             placeholder="🎯 Target audience"
             value={formData.audience}
             onChange={handleChange}
+            className="bg-white text-black placeholder-gray-500 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
           />
           <Input
             name="media_type"
             placeholder="🎬 Media Type (text/image/video)"
             value={formData.media_type}
             onChange={handleChange}
+            className="bg-white text-black placeholder-gray-500 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
           />
         </div>
 
@@ -155,15 +162,12 @@ const Advertising = () => {
                 </div>
               )}
 
-              {adId && (
+              {blobKey && (
                 <Button
                   variant="outline"
                   className="mt-4"
                   onClick={() =>
-                    window.open(
-                      `http://localhost:8000/api/advertising/export-pdf/${adId}`,
-                      '_blank'
-                    )
+                    window.open(`${API_BASE}/export-pdf/${blobKey}`, '_blank')
                   }
                 >
                   📄 Export to PDF
@@ -178,10 +182,3 @@ const Advertising = () => {
 };
 
 export default Advertising;
-
-
-
-
-
-
-
