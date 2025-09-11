@@ -1,5 +1,4 @@
 // src/modules/ChatModule.jsx
-
 import React, { useState } from 'react';
 import PageWrapper from '@/components/PageWrapper';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion } from 'framer-motion';
 import { slideUp } from '@/config/animations';
-import useStreamAI from '@/hooks/useStreamAI';
+
+const API_BASE = `${import.meta.env.VITE_API_BASE}/chat`;
 
 const ChatModule = () => {
   const [messages, setMessages] = useState([
@@ -26,36 +26,38 @@ const ChatModule = () => {
     setLoading(true);
 
     try {
-      await useStreamAI({
-        prompt: input,
-        userId,
-        onData: (chunk) => {
-          setMessages(prev => {
-            const last = prev[prev.length - 1];
-            if (last && last.from === 'ai') {
-              // Append to last AI message
-              const updated = [...prev];
-              updated[updated.length - 1].text += chunk;
-              return updated;
-            } else {
-              return [...prev, { from: 'ai', text: chunk }];
-            }
-          });
-        },
-        onDone: () => setLoading(false),
-        onError: () => {
-          setMessages(prev => [
-            ...prev,
-            { from: 'ai', text: '❌ Error streaming from AI.' }
-          ]);
-          setLoading(false);
-        }
+      const response = await fetch(`${API_BASE}/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage.text, user_id: userId })
       });
+
+      if (!response.body) throw new Error("No response body");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      let aiMessage = { from: "ai", text: "" };
+      setMessages(prev => [...prev, aiMessage]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+
+        setMessages(prev => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last && last.from === "ai") {
+            last.text += chunk;
+          }
+          return updated;
+        });
+      }
     } catch (err) {
-      setMessages(prev => [
-        ...prev,
-        { from: 'ai', text: '❌ Unexpected error. Please try again later.' }
-      ]);
+      console.error(err);
+      setMessages(prev => [...prev, { from: "ai", text: "❌ Stream error." }]);
+    } finally {
       setLoading(false);
     }
   };
@@ -79,6 +81,7 @@ const ChatModule = () => {
 
         <Card className="h-[60vh] md:h-[500px] shadow-md">
           <CardContent className="flex flex-col h-full p-3 md:p-6">
+            {/* Chat Messages */}
             <ScrollArea className="flex-1 overflow-y-auto pr-2 space-y-3">
               {messages.map((msg, index) => (
                 <motion.div
@@ -106,13 +109,16 @@ const ChatModule = () => {
               )}
             </ScrollArea>
 
+            {/* Input Area */}
             <div className="flex gap-2 mt-3 md:mt-4">
               <Input
                 placeholder="Type your message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="flex-1 text-sm md:text-base"
+                className="flex-1 text-sm md:text-base 
+                           bg-white text-black placeholder-gray-500
+                           dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
               />
               <Button 
                 onClick={handleAIStream} 
@@ -130,5 +136,3 @@ const ChatModule = () => {
 };
 
 export default ChatModule;
-
-
