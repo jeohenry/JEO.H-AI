@@ -1,54 +1,134 @@
-//src/modules/TrackingAI.jsx
+// src/modules/TrackingAI.jsx
 
 import React, { useState } from 'react';
-import axios from '@/api';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, LocateFixed } from 'lucide-react';
+import { Loader2, LocateFixed, FileDown, FileText } from 'lucide-react';
+import PageWrapper from '../components/PageWrapper';
+import { motion } from 'framer-motion';
+import { slideUp } from '../config/animations';
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const TrackingAI = () => {
   const [target, setTarget] = useState('');
   const [status, setStatus] = useState('');
+  const [storageUrl, setStorageUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleTrack = async () => {
-    if (!target) return;
+    if (!target.trim()) return;
     setLoading(true);
+    setStatus('');
+    setStorageUrl('');
     try {
-      const res = await axios.post('/tracking/query', { target });
+      const res = await axios.post(`${API_BASE}/tracking/query`, { target });
       setStatus(res.data.status);
+      setStorageUrl(res.data.storage_url);
     } catch (err) {
       console.error(err);
       setStatus('❌ Error tracking the target.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleExport = async (format) => {
+    try {
+      const res = await axios.post(
+        `${API_BASE}/tracking/export/${format}`,
+        { target, status },
+        { responseType: 'blob' }
+      );
+
+      const blob = new Blob([res.data], {
+        type: format === "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `tracking_report.${format}`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(`Export ${format} failed:`, err);
+    }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold">📍 Tracking AI</h2>
-      <Card>
-        <CardContent className="space-y-4 mt-4">
-          <Input
-            placeholder="Track anything from where you are, become and instant tracker (e.g., John Doe, Shipment A123)"
-            value={target}
-            onChange={(e) => setTarget(e.target.value)}
-          />
-          <Button onClick={handleTrack} disabled={loading}>
-            {loading ? <Loader2 className="animate-spin" /> : <><LocateFixed className="mr-2" /> Track</>}
-          </Button>
-        </CardContent>
-      </Card>
+    <PageWrapper>
+      <motion.div
+        className="p-4 sm:p-6 w-full max-w-2xl mx-auto space-y-6"
+        variants={slideUp}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-blue-700">
+          📍 Tracking AI
+        </h2>
 
-      {status && (
-        <Card className="mt-4">
-          <CardContent>
-            <p><strong>Status:</strong> {status}</p>
+        <Card className="shadow-lg">
+          <CardContent className="space-y-4 p-6">
+            <Input
+              placeholder="Track anything instantly (e.g., John Doe, Shipment A123)"
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              className="w-full bg-white text-black placeholder-gray-500 
+                         dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
+            />
+            <Button
+              onClick={handleTrack}
+              disabled={loading}
+              className="w-full flex items-center justify-center"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin w-4 h-4" />
+              ) : (
+                <>
+                  <LocateFixed className="mr-2 w-4 h-4" /> Track
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
-      )}
-    </div>
+
+        {status && (
+          <Card className="bg-green-50 dark:bg-green-900 shadow-md border-green-200 dark:border-green-700">
+            <CardContent className="p-5 space-y-4">
+              <p className="text-lg">
+                <strong>Status:</strong> {status}
+              </p>
+
+              {/* Export Options */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => handleExport("pdf")}
+                  className="flex items-center justify-center w-full"
+                >
+                  <FileDown className="mr-2 w-4 h-4" /> Export PDF
+                </Button>
+                <Button
+                  onClick={() => handleExport("docx")}
+                  className="flex items-center justify-center w-full"
+                >
+                  <FileText className="mr-2 w-4 h-4" /> Export DOCX
+                </Button>
+              </div>
+
+              {storageUrl && (
+                <p className="text-sm text-gray-500 dark:text-gray-300">
+                  ☁️ Stored securely: <a href={storageUrl} target="_blank" rel="noopener noreferrer" className="underline">View JSON</a>
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </motion.div>
+    </PageWrapper>
   );
 };
 
