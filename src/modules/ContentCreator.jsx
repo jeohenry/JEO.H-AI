@@ -25,17 +25,31 @@ const ContentCreator = () => {
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Parallel API calls
   const handleGenerate = async () => {
     if (!prompt) return;
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE}/content/create`, {
-        prompt,
-        content_type: contentType,
-      });
-      setResult(response.data.content);
+      const [defaultRes, templateRes] = await Promise.all([
+        axios.post(`${API_BASE}/content/create`, {
+          prompt,
+          content_type: contentType,
+        }),
+        axios.post(`${API_BASE}/generate-content`, {
+          topic: prompt,
+          content_type: contentType,
+          model: "auto"
+        })
+      ]);
+
+      const combined =
+        `✨ Default Generator Output:\n\n${defaultRes.data.content || "No content"}\n\n` +
+        `✨ Template Generator Output:\n\n${templateRes.data.result || "No content"}`;
+
+      setResult(combined);
     } catch (err) {
-      setResult('❌ Error generating content.');
+      console.error(err);
+      setResult('❌ Error generating combined content.');
     } finally {
       setLoading(false);
     }
@@ -140,7 +154,7 @@ const ContentCreator = () => {
                 />
               </div>
 
-              {/* Action Button */}
+              {/* Single Action Button */}
               <div className="flex justify-end">
                 <Button onClick={handleGenerate} disabled={loading || !prompt}>
                   {loading ? 'Generating...' : 'Generate Content'}
@@ -157,9 +171,9 @@ const ContentCreator = () => {
               </h4>
               <div className="flex-1 overflow-y-auto p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 {result ? (
-                  <p className="whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200 text-sm sm:text-base">
+                  <pre className="whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200 text-sm sm:text-base">
                     {result}
-                  </p>
+                  </pre>
                 ) : (
                   <p className="text-gray-400 dark:text-gray-500 text-sm italic">
                     Your generated content will appear here...
