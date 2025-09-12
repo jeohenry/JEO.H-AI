@@ -20,32 +20,40 @@ function AdminLogin() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
       <form
         onSubmit={handleLogin}
-        className="bg-white p-6 rounded shadow-md w-80"
+        className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-sm"
       >
-        <h2 className="text-2xl font-bold mb-4">Admin Login</h2>
-        {error && <p className="text-red-600 mb-2">{error}</p>}
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          Admin Login
+        </h2>
+
+        {error && (
+          <p className="text-red-600 text-sm mb-3 text-center">{error}</p>
+        )}
+
         <input
           type="text"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border border-gray-300 bg-white text-black placeholder-gray-500 p-3 mb-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
+
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 mb-3 rounded"
+          className="w-full border border-gray-300 bg-white text-black placeholder-gray-500 p-3 mb-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
+
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200"
         >
           Login
         </button>
