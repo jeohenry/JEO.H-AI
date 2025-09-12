@@ -8,18 +8,27 @@ export function useAdminAuth() {
   const login = async (username, password, setError) => {
     try {
       const res = await API.post("/admin/login", { username, password });
-      localStorage.setItem("userRole", "admin");
-      localStorage.setItem("token", res.data.token);
+
+      // Backend returns: access_token, role, username
+      const { access_token, role, username: adminUsername } = res.data;
+
+      // Store in localStorage
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("token", access_token);
+      localStorage.setItem("adminUsername", adminUsername);
 
       navigate("/admin/dashboard", { replace: true });
+      return true; // success flag
     } catch (err) {
       setError("Invalid admin credentials");
+      return false;
     }
   };
 
   const logout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("token");
+    localStorage.removeItem("adminUsername");
     navigate("/admin/login", { replace: true });
   };
 
