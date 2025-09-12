@@ -1,4 +1,4 @@
-//src/pages/relationship/ChatRoom.jsx
+// src/pages/relationship/ChatRoom.jsx
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,15 +15,20 @@ const ChatRoom = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem("user_id");
 
-  const { messages: groupMessages, sendMessage } = useWebRTCChat(userId);
+  const {
+    messages: groupMessages,
+    sendMessage,
+    connectionStatus,
+  } = useWebRTCChat(userId);
+
   const {
     response: aiResponse,
     loading: aiLoading,
     error: aiError,
-    streamAIResponse,
+    fetchAIResponse,
     reset: resetAI,
     abort: abortAI,
-  } = useStreamAI(userId); // ✅ Use the hook
+  } = useStreamAI({ userId });
 
   useEffect(() => {
     if (!userId) return navigate("/relationship/login");
@@ -35,7 +40,40 @@ const ChatRoom = () => {
 
   const handleAISubmit = (e) => {
     e.preventDefault();
-    if (aiPrompt.trim()) streamAIResponse(aiPrompt);
+    if (!aiPrompt.trim()) return;
+
+    // ✅ Broadcast the user’s question as a group message
+    sendMessage({
+      translated_text: aiPrompt,
+      original_text: aiPrompt,
+      sender: userId,
+    });
+
+    // ✅ Request AI streaming answer
+    fetchAIResponse({
+      prompt: aiPrompt,
+      stream: true,
+      outputType: "text",
+      onData: (chunk) => {
+        // Send incremental AI chunks into chat
+        sendMessage({
+          translated_text: chunk,
+          original_text: chunk,
+          sender: "AI",
+          partial: true, // mark as streaming
+        });
+      },
+      onDone: () => {
+        // Send final AI response into chat
+        sendMessage({
+          translated_text: aiResponse,
+          original_text: aiResponse,
+          sender: "AI",
+        });
+      },
+    });
+
+    setAiPrompt("");
   };
 
   return (
@@ -78,14 +116,37 @@ const ChatRoom = () => {
         {/* 💬 Group Chat */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-gray-800">💬 Group Chat</h2>
+
+          {/* ✅ Show connection status */}
+          <div
+            className={`px-3 py-1 rounded text-sm font-medium inline-block ${
+              connectionStatus === "connected"
+                ? "bg-green-100 text-green-700"
+                : connectionStatus === "reconnecting"
+                ? "bg-yellow-100 text-yellow-700 animate-pulse"
+                : connectionStatus === "connecting"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {connectionStatus === "connected" && "🟢 Connected"}
+            {connectionStatus === "reconnecting" && "🟡 Reconnecting..."}
+            {connectionStatus === "connecting" && "🔵 Connecting..."}
+            {connectionStatus === "disconnected" && "🔴 Disconnected"}
+          </div>
+
           <ChatBox messages={groupMessages} onSend={sendMessage} />
 
           {/* ✅ Group Messages with Translation Toggle + Voice */}
           <div className="space-y-4">
-            {groupMessages.map((msg) => (
+            {groupMessages.map((msg, idx) => (
               <div
-                key={msg.id}
-                className="bg-gray-50 border rounded-lg p-3 shadow-sm"
+                key={idx}
+                className={`border rounded-lg p-3 shadow-sm ${
+                  msg.sender === "AI"
+                    ? "bg-purple-50 border-purple-200"
+                    : "bg-gray-50 border-gray-200"
+                }`}
               >
                 <p className="text-gray-800">{msg.translated_text}</p>
 
@@ -103,14 +164,21 @@ const ChatRoom = () => {
                     <source src={msg.voice_url} type="audio/mpeg" />
                   </audio>
                 )}
+
+                {/* ✅ Show sender */}
+                <p className="text-xs text-gray-500 mt-2">
+                  — {msg.sender === "AI" ? "🤖 AI" : `@${msg.sender}`}
+                </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 🧠 AI Stream Section */}
+        {/* 🧠 AI Input Box */}
         <div className="space-y-4 border-t pt-6 mt-8">
-          <h2 className="text-2xl font-bold text-purple-700">🧠 Ask AI in Group</h2>
+          <h2 className="text-2xl font-bold text-purple-700">
+            🧠 Ask AI in Group
+          </h2>
           <form onSubmit={handleAISubmit} className="flex gap-2">
             <input
               type="text"
@@ -134,7 +202,11 @@ const ChatRoom = () => {
               Stop
             </button>
           </form>
-
           {aiError && <p className="text-red-500">⚠️ {aiError}</p>}
-          {aiResponse && (
-            <di
+        </div>
+      </motion.div>
+    </PageWrapper>
+  );
+};
+
+export default ChatRoom;
