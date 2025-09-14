@@ -1,291 +1,442 @@
-// src/pages/relationship/GroupVideoCall.jsx
-import React, { useRef, useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { toast } from "react-hot-toast";
-import { motion } from "framer-motion";
-import PageWrapper from "@/components/PageWrapper";
+// src/components/GroupVideoCall.jsx
+import React, { useEffect, useRef, useState } from "react";
 
-const servers = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-};
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const WS_BASE = API_BASE.replace(
+  /^http/,
+  window.location.protocol === "https:" ? "wss" : "ws"
+);
 
-let peers = {};
+export default function GroupVideoCall({ roomId, userId }) {
+  const socketRef = useRef(null);
+  const peersRef = useRef({});
+  const streamsRef = useRef({});
+  const localStreamRef = useRef(null);
+  const currentVideoTrackRef = useRef(null);
+  const recorderSocketRef = useRef(null);
 
-const GroupVideoCall = () => {
-  const localVideoRef = useRef(null);
-  const [cameraOn, setCameraOn] = useState(true);
-  const [micOn, setMicOn] = useState(true);
+  // 🔥 NEW refs for reconnect logic
+  const reconnectTimerRef = useRef(null);
+  const retryDelayRef = useRef(1000);
+
   const [remoteStreams, setRemoteStreams] = useState({});
-  const [participants, setParticipants] = useState(1);
-  const [typingUser, setTypingUser] = useState(null);
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get("room") || "default";
-  const navigate = useNavigate();
-  const ws = useRef(null);
-  const recordWs = useRef(null);
-  const localStream = useRef(null);
+  const [participants, setParticipants] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
+  const [isRecording, setIsRecording] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  const [recording, setRecording] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState(null);
 
+  // 🔥 NEW states for mute/unmute
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+
+  // ------------------------
+  // Setup WebSocket
+  // ------------------------
   useEffect(() => {
-    ws.current = new WebSocket(`ws://localhost:8000/ws/group/${roomId}`);
+    if (!roomId || !userId) return;
 
-    ws.current.onmessage = async (event) => {
-      const data = JSON.parse(event.data);
-      const { type, from, offer, answer, candidate, chat, typing } = data;
+    const connect = () => {
+      setConnectionStatus((prev) =>
+        prev === "reconnecting" ? "reconnecting" : "connecting"
+      );
 
-      if (typing) {
-        setTypingUser(from);
-        setTimeout(() => setTypingUser(null), 1500);
-        return;
-      }
+      const socket = new WebSocket(`${WS_BASE}/ws/call/${roomId}`);
+      socketRef.current = socket;
 
-      if (chat) {
-        toast.success("💬 New message received");
-        setMessages((prev) => [...prev, { from, text: chat }]);
-        return;
-      }
+      socket.onopen = () => {
+        console.log("[WS] Connected");
+        retryDelayRef.current = 1000;
+        setConnectionStatus("connected");
+      };
 
-      if (type === "join") {
-        setParticipants((prev) => prev + 1);
-        toast.success(`👤 A new user joined room ${roomId}`);
-      }
+      socket.onclose = () => {
+        console.warn("[WS] Disconnected, retrying...");
+        setConnectionStatus("reconnecting");
+        scheduleReconnect();
+      };
 
-      if (type === "leave") {
-        setParticipants((prev) => Math.max(1, prev - 1));
-        toast(`🚪 Someone left room ${roomId}`);
-      }
+      socket.onerror = (err) => {
+        console.error("[WS] Error:", err);
+        socket.close();
+      };
 
-      switch (type) {
-        case "offer":
-          peers[from] = createPeerConnection(from);
-          await peers[from].setRemoteDescription(new RTCSessionDescription(offer));
-          const ans = await peers[from].createAnswer();
-          await peers[from].setLocalDescription(ans);
-          ws.current.send(
-            JSON.stringify({ type: "answer", to: from, answer: ans, from: roomId })
-          );
-          break;
+      socket.onmessage = async (event) => {
+        const msg = JSON.parse(event.data);
+        const { type, from, data } = msg;
 
-        case "answer":
-          if (peers[from]) await peers[from].setRemoteDescription(new RTCSessionDescription(answer));
-          break;
+        if (from === userId) return;
 
-        case "candidate":
-          if (peers[from]) await peers[from].addIceCandidate(new RTCIceCandidate(candidate));
-          break;
-
-        default:
-          break;
-      }
+        switch (type) {
+          case "participants": // 🔥 sync participants list
+            setParticipants(data);
+            peersRef.current = {};
+            streamsRef.current = {};
+            setRemoteStreams({});
+            break;
+          case "join":
+            setParticipants((prev) => [...new Set([...prev, from])]);
+            await createPeerConnection(from, true);
+            break;
+          case "leave":
+            setParticipants((prev) => prev.filter((p) => p !== from));
+            break;
+          case "offer":
+            const pcOffer = await createPeerConnection(from, false);
+            await pcOffer.setRemoteDescription(new RTCSessionDescription(data));
+            const answer = await pcOffer.createAnswer();
+            await pcOffer.setLocalDescription(answer);
+            sendSignal({ type: "answer", from: userId, to: from, data: answer });
+            break;
+          case "answer":
+            const pcAnswer = peersRef.current[from];
+            if (pcAnswer) {
+              await pcAnswer.setRemoteDescription(new RTCSessionDescription(data));
+            }
+            break;
+          case "ice-candidate":
+            if (data) {
+              const pc = peersRef.current[from];
+              if (pc) {
+                try {
+                  await pc.addIceCandidate(new RTCIceCandidate(data));
+                } catch (err) {
+                  console.warn("Error adding ICE candidate:", err);
+                }
+              }
+            }
+            break;
+          case "chat":
+            setMessages((prev) => [...prev, { sender: from, message: data }]);
+            break;
+          default:
+            break;
+        }
+      };
     };
 
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        localStream.current = stream;
-        localVideoRef.current.srcObject = stream;
-        ws.current.onopen = () => {
-          ws.current.send(JSON.stringify({ type: "join", from: roomId }));
-        };
-      })
-      .catch((err) => console.error("Media access error:", err));
+    const scheduleReconnect = () => {
+      if (reconnectTimerRef.current) return;
+
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimerRef.current = null;
+        retryDelayRef.current = Math.min(retryDelayRef.current * 2, 30000); // max 30s
+        connect();
+      }, retryDelayRef.current);
+    };
+
+    connect();
 
     return () => {
-      ws.current?.close();
-      Object.values(peers).forEach((pc) => pc.close());
+      socketRef.current?.close();
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      Object.values(peersRef.current).forEach((pc) => pc.close());
+      peersRef.current = {};
+      setConnectionStatus("disconnected");
     };
-  }, [roomId]);
+  }, [roomId, userId]);
 
-  const createPeerConnection = (peerId) => {
-    const pc = new RTCPeerConnection(servers);
-    localStream.current.getTracks().forEach((track) =>
-      pc.addTrack(track, localStream.current)
-    );
+  // ------------------------
+  // Helpers
+  // ------------------------
+  const sendSignal = (msg) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify(msg));
+    }
+  };
 
-    pc.onicecandidate = (e) => {
-      if (e.candidate) {
-        ws.current.send(
-          JSON.stringify({ type: "candidate", candidate: e.candidate, from: roomId, to: peerId })
-        );
+  const createPeerConnection = async (peerId, isInitiator) => {
+    if (peersRef.current[peerId]) return peersRef.current[peerId];
+
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+
+    // Local tracks
+    localStreamRef.current?.getTracks().forEach((track) => {
+      pc.addTrack(track, localStreamRef.current);
+    });
+
+    // ICE candidates
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        sendSignal({
+          type: "ice-candidate",
+          from: userId,
+          to: peerId,
+          data: event.candidate,
+        });
       }
     };
 
-    pc.ontrack = (e) => {
-      setRemoteStreams((prev) => ({ ...prev, [peerId]: e.streams[0] }));
+    // Remote stream
+    const remoteStream = new MediaStream();
+    streamsRef.current[peerId] = remoteStream;
+    pc.ontrack = (event) => {
+      event.streams[0].getTracks().forEach((t) => remoteStream.addTrack(t));
+      setRemoteStreams((prev) => ({ ...prev, [peerId]: remoteStream }));
     };
+
+    peersRef.current[peerId] = pc;
+
+    if (isInitiator) {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendSignal({ type: "offer", from: userId, to: peerId, data: offer });
+    }
 
     return pc;
   };
 
-  const toggleCamera = () => {
-    const videoTrack = localVideoRef.current.srcObject.getVideoTracks()[0];
-    videoTrack.enabled = !cameraOn;
-    setCameraOn(!cameraOn);
+  const startLocalStream = async () => {
+    localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+    currentVideoTrackRef.current = localStreamRef.current.getVideoTracks()[0];
+    return localStreamRef.current;
   };
 
-  const toggleMic = () => {
-    const audioTrack = localVideoRef.current.srcObject.getAudioTracks()[0];
-    audioTrack.enabled = !micOn;
-    setMicOn(!micOn);
+  const replaceVideoTrack = (newTrack) => {
+    if (localStreamRef.current) {
+      const oldTrack = currentVideoTrackRef.current;
+      if (oldTrack) localStreamRef.current.removeTrack(oldTrack);
+      localStreamRef.current.addTrack(newTrack);
+      currentVideoTrackRef.current = newTrack;
+    }
+
+    Object.values(peersRef.current).forEach((pc) => {
+      const sender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
+      if (sender) sender.replaceTrack(newTrack);
+    });
   };
 
-  const leaveCall = () => {
-    const stream = localVideoRef.current.srcObject;
-    stream.getTracks().forEach((track) => track.stop());
-    toast("📴 You left the call");
-    ws.current.send(JSON.stringify({ type: "leave", from: roomId }));
-    navigate("/");
+  const startScreenShare = async () => {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const screenTrack = screenStream.getVideoTracks()[0];
+      replaceVideoTrack(screenTrack);
+
+      screenTrack.onended = async () => {
+        await stopScreenShare();
+      };
+
+      return screenStream;
+    } catch (err) {
+      console.error("Screen share error:", err);
+    }
+  };
+
+  const stopScreenShare = async () => {
+    const camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const camTrack = camStream.getVideoTracks()[0];
+    replaceVideoTrack(camTrack);
+    return camStream;
   };
 
   const sendMessage = () => {
-    if (newMessage.trim() !== "") {
-      ws.current.send(JSON.stringify({ chat: newMessage, from: roomId }));
-      setMessages((prev) => [...prev, { from: "You", text: newMessage }]);
-      setNewMessage("");
-    }
+    if (!newMessage.trim()) return;
+    const msg = { type: "chat", from: userId, data: newMessage.trim() };
+    sendSignal(msg);
+    setMessages((prev) => [...prev, { sender: userId, message: newMessage.trim() }]);
+    setNewMessage("");
   };
 
-  const handleTyping = () => {
-    ws.current.send(JSON.stringify({ typing: true, from: roomId }));
+  // ------------------------
+  // NEW: Mute/Unmute Controls
+  // ------------------------
+  const toggleAudio = () => {
+    if (!localStreamRef.current) return;
+    localStreamRef.current.getAudioTracks().forEach((track) => {
+      track.enabled = !track.enabled;
+      setIsAudioMuted(!track.enabled);
+    });
   };
 
-  // ----------------------------
-  // Recording functions
-  // ----------------------------
-  const startRecording = () => {
-    if (!localStream.current) return;
-    recordWs.current = new WebSocket(`ws://localhost:8000/ws/group/${roomId}`);
-    const mediaRecorder = new MediaRecorder(localStream.current, { mimeType: "video/webm" });
-    mediaRecorder.ondataavailable = (e) => {
-      if (recordWs.current.readyState === WebSocket.OPEN && e.data.size > 0) {
-        e.data.arrayBuffer().then((buffer) => recordWs.current.send(buffer));
-      }
-    };
-    mediaRecorder.start(1000);
-    recordWs.current.onopen = () => toast.success("⏺️ Recording started");
-    setRecording(true);
+  const toggleVideo = () => {
+    if (!localStreamRef.current) return;
+    localStreamRef.current.getVideoTracks().forEach((track) => {
+      track.enabled = !track.enabled;
+      setIsVideoMuted(!track.enabled);
+    });
+  };
 
-    recordWs.current.onclose = async () => {
-      toast.success("⏹️ Recording stopped");
-      // Fetch download URL
-      try {
-        const res = await fetch(`http://localhost:8000/group/download/${roomId}`);
-        const data = await res.json();
-        setDownloadUrl(data.download_url);
-      } catch (err) {
-        toast.error("❌ Failed to get download URL");
-      }
-    };
+  // ------------------------
+  // Recording
+  // ------------------------
+  const startRecording = async () => {
+    if (!localStreamRef.current) return;
 
-    localStreamRef.current = mediaRecorder;
+    const recorderSocket = new WebSocket(`${WS_BASE}/ws/record/group/${roomId}`);
+    recorderSocketRef.current = recorderSocket;
+
+    recorderSocket.onopen = () => {
+      const mediaRecorder = new MediaRecorder(localStreamRef.current, {
+        mimeType: "video/webm; codecs=vp8,opus",
+      });
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0 && recorderSocket.readyState === WebSocket.OPEN) {
+          e.data.arrayBuffer().then((buf) => recorderSocket.send(buf));
+        }
+      };
+
+      mediaRecorder.start(1000);
+      setIsRecording(true);
+
+      recorderSocket.onclose = () => {
+        mediaRecorder.stop();
+        setIsRecording(false);
+      };
+    };
   };
 
   const stopRecording = () => {
-    if (localStreamRef.current && localStreamRef.current instanceof MediaRecorder) {
-      localStreamRef.current.stop();
-      recordWs.current.close();
-      setRecording(false);
+    recorderSocketRef.current?.close();
+    setIsRecording(false);
+  };
+
+  const downloadRecording = async () => {
+    const res = await fetch(`${API_BASE}/group/download/${roomId}`);
+    if (res.ok) {
+      const { download_url } = await res.json();
+      window.open(download_url, "_blank");
+    } else {
+      alert("No recording found");
     }
   };
 
+  // ------------------------
+  // UI
+  // ------------------------
   return (
-    <PageWrapper>
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.4 }}
-        className="p-4"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-center">🎥 Group Video Call</h2>
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-bold text-center">📹 Group Call Room: {roomId}</h2>
+      <p className="text-center text-sm">Status: {connectionStatus}</p>
 
-        <div className="text-center mb-4">
-          <Link
-            to="/relationship"
-            className="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+      {/* Controls */}
+      <div className="flex flex-wrap justify-center gap-2">
+        <button
+          onClick={async () => {
+            const stream = await startLocalStream();
+            const video = document.getElementById("local-video");
+            if (video) video.srcObject = stream;
+          }}
+          className="px-3 py-1 bg-green-600 text-white rounded"
+        >
+          Start Camera
+        </button>
+        <button onClick={toggleAudio} className="px-3 py-1 bg-gray-700 text-white rounded">
+          {isAudioMuted ? "Unmute Audio" : "Mute Audio"}
+        </button>
+        <button onClick={toggleVideo} className="px-3 py-1 bg-gray-700 text-white rounded">
+          {isVideoMuted ? "Unmute Video" : "Mute Video"}
+        </button>
+        <button
+          onClick={startScreenShare}
+          className="px-3 py-1 bg-blue-600 text-white rounded"
+        >
+          Share Screen
+        </button>
+        <button
+          onClick={stopScreenShare}
+          className="px-3 py-1 bg-gray-600 text-white rounded"
+        >
+          Stop Share
+        </button>
+        {!isRecording ? (
+          <button
+            onClick={startRecording}
+            className="px-3 py-1 bg-red-600 text-white rounded"
           >
-            ← Back to Relationship
-          </Link>
+            Start Recording
+          </button>
+        ) : (
+          <button
+            onClick={stopRecording}
+            className="px-3 py-1 bg-yellow-600 text-white rounded"
+          >
+            Stop Recording
+          </button>
+        )}
+        <button
+          onClick={downloadRecording}
+          className="px-3 py-1 bg-indigo-600 text-white rounded"
+        >
+          Download Recording
+        </button>
+      </div>
+
+      {/* Video Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-4">
+        <video
+          id="local-video"
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-48 bg-black rounded"
+        ></video>
+        {Object.entries(remoteStreams).map(([peerId, stream]) => (
+          <video
+            key={peerId}
+            autoPlay
+            playsInline
+            ref={(el) => {
+              if (el && stream) el.srcObject = stream;
+            }}
+            className="w-full h-48 bg-black rounded"
+          ></video>
+        ))}
+      </div>
+
+      {/* Participants */}
+      <div>
+        <h3 className="font-semibold">👥 Participants</h3>
+        <ul className="list-disc pl-5">
+          {participants.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Chat */}
+      <div>
+        <h3 className="font-semibold mb-2">💬 Chat</h3>
+        <div className="border h-40 overflow-y-auto p-2 rounded bg-gray-100 dark:bg-gray-800">
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              className={`px-3 py-2 my-1 rounded-lg text-sm w-fit max-w-[75%] ${
+                m.sender === userId
+                  ? "ml-auto bg-blue-600 text-white"
+                  : "mr-auto bg-gray-300 dark:bg-gray-700 dark:text-white"
+              }`}
+            >
+              <strong className="block text-xs opacity-70">{m.sender}</strong>
+              {m.message}
+            </div>
+          ))}
         </div>
-
-        <p className="text-center text-sm mb-4">👥 Participants: {participants}</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Local & Remote Videos */}
-          <div>
-            <video ref={localVideoRef} autoPlay muted className="w-full max-w-lg rounded shadow" />
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 my-4">
-              {Object.entries(remoteStreams).map(([id, stream]) => (
-                <video
-                  key={id}
-                  autoPlay
-                  playsInline
-                  ref={(video) => video && (video.srcObject = stream)}
-                  className="rounded shadow w-full"
-                />
-              ))}
-            </div>
-            <div className="flex justify-center gap-4 mt-4">
-              <button onClick={toggleCamera} className="bg-blue-500 px-4 py-2 rounded text-white">
-                {cameraOn ? "📷 Off" : "📷 On"}
-              </button>
-              <button onClick={toggleMic} className="bg-green-500 px-4 py-2 rounded text-white">
-                {micOn ? "🎙️ Mute" : "🎙️ Unmute"}
-              </button>
-              <button onClick={leaveCall} className="bg-red-600 px-4 py-2 rounded text-white">
-                ❌ Leave
-              </button>
-              {!recording ? (
-                <button onClick={startRecording} className="bg-yellow-600 px-4 py-2 rounded text-white">
-                  ⏺️ Start Recording
-                </button>
-              ) : (
-                <button onClick={stopRecording} className="bg-orange-600 px-4 py-2 rounded text-white">
-                  ⏹️ Stop Recording
-                </button>
-              )}
-              {downloadUrl && (
-                <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="bg-purple-600 px-4 py-2 rounded text-white">
-                  ⬇️ Download
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* Chat Section */}
-          <div className="bg-white border p-4 rounded shadow h-[480px] overflow-y-scroll">
-            <h3 className="text-lg font-semibold mb-2">💬 Live Chat</h3>
-            <div className="space-y-2">
-              {messages.map((msg, idx) => (
-                <div key={idx} className="bg-gray-100 p-2 rounded">
-                  <strong>{msg.from}:</strong> {msg.text}
-                </div>
-              ))}
-              {typingUser && (
-                <p className="text-xs text-gray-500 italic">✍️ {typingUser} is typing...</p>
-              )}
-            </div>
-            <div className="mt-4 flex">
-              <input
-                type="text"
-                className="border p-2 rounded flex-1 mr-2"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleTyping}
-                placeholder="Type a message..."
-              />
-              <button onClick={sendMessage} className="bg-indigo-600 text-white px-4 py-2 rounded">
-                ➤
-              </button>
-            </div>
-          </div>
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 border px-3 py-2 rounded-lg bg-white text-black dark:bg-gray-900 dark:text-white"
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          />
+          <button
+            onClick={sendMessage}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Send
+          </button>
         </div>
-      </motion.div>
-    </PageWrapper>
+      </div>
+    </div>
   );
-};
-
-export default GroupVideoCall;
+}
