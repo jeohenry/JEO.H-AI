@@ -1,5 +1,5 @@
 // src/services/Voice.js
-import axios from "../api";
+import axios from "@/api";
 
 export const playGreetingVoice = async (text, lang = "en") => {
   try {
