@@ -8,11 +8,10 @@ import {
   FiMic,
   FiMicOff,
   FiShare2,
-  FiSave,
-  FiSun,
-  FiMoon,
   FiDownload,
   FiRefreshCw,
+  FiSun,
+  FiMoon,
 } from "react-icons/fi";
 import confetti from "canvas-confetti";
 import { jsPDF } from "jspdf";
@@ -33,8 +32,10 @@ const Advice = () => {
   const [listening, setListening] = useState(false);
   const [showFollowUp, setShowFollowUp] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+
   const recognitionRef = useRef(null);
 
+  // 🎙️ Speech recognition setup
   useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) return;
 
@@ -64,32 +65,31 @@ const Advice = () => {
     }
   };
 
+  // 📌 Fetch AI advice
   const getAdvice = async () => {
     setAdviceLoading(true);
     setAdviceError("");
     setAdvice("");
     setFollowUp("");
     try {
-      const res = await axios.post("/relationship/advice", { question: query });
+      const res = await axios.post("/relationship/ai/advice", { query });
       const newAdvice = res.data.advice || "No advice returned.";
       setAdvice(newAdvice);
 
-      // Confetti
+      // 🎉 confetti celebration
       confetti({ particleCount: 120, spread: 70 });
 
-      // Save to DB
-      await axios.post("/relationship/save-advice", {
-        question: query,
-        advice: newAdvice,
-      });
+      // 📌 fetch follow-up question
+      try {
+        const followRes = await axios.post("/relationship/ai/follow-up", {
+          advice: newAdvice,
+        });
+        setFollowUp(followRes.data.followup || "");
+      } catch (err) {
+        console.error("Follow-up fetch failed:", err);
+      }
 
-      // Get follow-up question
-      const followRes = await axios.post("/relationship/follow-up", {
-        advice: newAdvice,
-      });
-      setFollowUp(followRes.data.followup || "");
-
-      // Update history
+      // Save to history
       setAdviceHistory((prev) => [
         { question: query, advice: newAdvice },
         ...prev.slice(0, 4),
@@ -102,12 +102,13 @@ const Advice = () => {
     }
   };
 
+  // 📌 Tone analysis
   const analyzeTone = async () => {
     setToneLoading(true);
     setToneError("");
     setToneResult("");
     try {
-      const res = await axios.post("/relationship/sentiment", {
+      const res = await axios.post("/relationship/ai/sentiment", {
         message: toneMsg,
       });
       setToneResult(res.data.tone || "No tone detected.");
@@ -119,6 +120,7 @@ const Advice = () => {
     }
   };
 
+  // 📌 Download PDF
   const downloadPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(16);
@@ -130,6 +132,7 @@ const Advice = () => {
     doc.save("relationship_advice.pdf");
   };
 
+  // 📌 Share advice
   const shareAdvice = async () => {
     if (navigator.share) {
       try {
@@ -144,8 +147,6 @@ const Advice = () => {
       alert("Sharing not supported on this device.");
     }
   };
-
-  const toggleTheme = () => setDarkMode(!darkMode);
 
   return (
     <div
@@ -162,19 +163,21 @@ const Advice = () => {
         >
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">❤️ Relationship AI Assistant</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              ❤️ Relationship AI Assistant
+            </h1>
             <button
-              onClick={toggleTheme}
+              onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition"
             >
               {darkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
             </button>
           </div>
 
-          {/* 💬 Relationship Advice */}
-          <section className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 space-y-4">
+          {/* Advice Section */}
+          <section className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 md:p-6 space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-pink-600 dark:text-pink-400">
+              <h2 className="text-xl md:text-2xl font-bold text-pink-600 dark:text-pink-400">
                 💬 Relationship Advice
               </h2>
               <button
@@ -189,12 +192,12 @@ const Advice = () => {
               placeholder="Ask your relationship question..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full p-4 border-2 border-pink-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 dark:border-pink-600 bg-white dark:bg-gray-900 rounded-lg shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800 dark:text-white"
+              className="w-full p-3 md:p-4 border-2 border-pink-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 dark:border-pink-600 bg-white dark:bg-gray-900 rounded-lg shadow-sm placeholder-gray-500 text-gray-800 dark:text-white resize-none"
             />
             <button
               onClick={getAdvice}
               disabled={adviceLoading || !query.trim()}
-              className={`px-5 py-2 rounded text-white transition ${
+              className={`w-full md:w-auto px-5 py-2 rounded text-white transition ${
                 adviceLoading || !query.trim()
                   ? "bg-pink-300 cursor-not-allowed"
                   : "bg-pink-600 hover:bg-pink-700"
@@ -202,7 +205,9 @@ const Advice = () => {
             >
               {adviceLoading ? "Getting Advice..." : "Get Advice"}
             </button>
+
             {adviceError && <p className="text-red-500">{adviceError}</p>}
+
             {advice && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -225,17 +230,18 @@ const Advice = () => {
                     </button>
                   </div>
                 </div>
-                <p>{advice}</p>
+                <p className="text-sm md:text-base">{advice}</p>
                 {showFollowUp && followUp && (
                   <div className="mt-3 p-3 rounded bg-blue-50 dark:bg-blue-900">
-                    <strong>🤖 Follow-up:</strong> <p>{followUp}</p>
+                    <strong>🤖 Follow-up:</strong>
+                    <p>{followUp}</p>
                   </div>
                 )}
               </motion.div>
             )}
           </section>
 
-          {/* 📜 Advice History */}
+          {/* Advice History */}
           {adviceHistory.length > 0 && (
             <section className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 space-y-2">
               <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-200">
@@ -259,9 +265,9 @@ const Advice = () => {
             </section>
           )}
 
-          {/* 🧠 Tone Analyzer */}
-          <section className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 space-y-4">
-            <h2 className="text-2xl font-bold text-gray-700 dark:text-white">
+          {/* Tone Analyzer */}
+          <section className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 md:p-6 space-y-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-700 dark:text-white">
               🧠 Tone Analyzer
             </h2>
             <textarea
@@ -269,12 +275,12 @@ const Advice = () => {
               placeholder="Paste a message to analyze tone..."
               value={toneMsg}
               onChange={(e) => setToneMsg(e.target.value)}
-              className="w-full p-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="w-full p-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-800 dark:text-white resize-none"
             />
             <button
               onClick={analyzeTone}
               disabled={toneLoading || !toneMsg.trim()}
-              className={`px-5 py-2 rounded text-white transition ${
+              className={`w-full md:w-auto px-5 py-2 rounded text-white transition ${
                 toneLoading || !toneMsg.trim()
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gray-800 hover:bg-gray-900"
@@ -282,6 +288,7 @@ const Advice = () => {
             >
               {toneLoading ? "Analyzing..." : "Analyze Tone"}
             </button>
+
             {toneError && <p className="text-red-500 text-sm">{toneError}</p>}
             {toneResult && (
               <motion.div
@@ -293,4 +300,13 @@ const Advice = () => {
                 <span className="text-gray-700 dark:text-white">
                   {toneResult}
                 </span>
- 
+              </motion.div>
+            )}
+          </section>
+        </motion.div>
+      </PageWrapper>
+    </div>
+  );
+};
+
+export default Advice;
