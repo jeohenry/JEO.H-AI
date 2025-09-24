@@ -1,5 +1,4 @@
-//src/pages/relationship/Profile.jsx
-
+// src/pages/relationship/Profile.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -15,6 +14,7 @@ export default function Profile() {
   const [voiceId, setVoiceId] = useState("");
   const [voices, setVoices] = useState([]);
   const [language, setLanguage] = useState("en");
+  const [bioBg, setBioBg] = useState("white");
 
   const navigate = useNavigate();
   const userId = localStorage.getItem("user_id");
@@ -27,7 +27,7 @@ export default function Profile() {
       const userData = res.data;
       setUser(userData);
       setNewBio(userData.bio || "");
-      setTranslateEnabled(userData.translate_enabled);
+      setTranslateEnabled(userData.translate_enabled ?? true);
       setVoiceId(userData.voice_id || "");
       setLanguage(userData.language || "en");
     });
@@ -52,19 +52,19 @@ export default function Profile() {
     axios.put(`/auth/me/update`, {
       translate_enabled: translateEnabled,
       voice_id: voiceId,
-      language: language,
+      language,
     });
   };
 
   const toggleLockProfile = () => {
-    axios.put(`/profile/lock/${userId}`).then((res) => {
+    axios.put(`/relationship/profile/lock/${userId}`).then((res) => {
       setUser({ ...user, is_private: res.data.private });
     });
   };
 
   const handleDisableAccount = () => {
     if (window.confirm("Are you sure you want to disable your account?")) {
-      axios.put(`/disable-account/${userId}`).then(() => {
+      axios.put(`/relationship/disable-account/${userId}`).then(() => {
         localStorage.clear();
         navigate("/relationship/login");
       });
@@ -72,6 +72,31 @@ export default function Profile() {
   };
 
   if (!user) return <p className="p-4 text-gray-600">Loading profile...</p>;
+
+  // ✅ helper for text contrast
+  const getTextColor = (bg) => (bg === "white" ? "text-black" : "text-white");
+
+  /* ───────── Handle Gallery Upload ───────── */
+  const handleGalleryUpload = async (e) => {
+    const files = e.target.files;
+    if (!files.length) return;
+
+    const formData = new FormData();
+    Array.from(files).forEach((f) => formData.append("files", f));
+
+    try {
+      await axios.post(`/upload/gallery/${userId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // ✅ Refresh gallery after upload
+      const res = await axios.get(`/relationship/user/${userId}`);
+      setUser(res.data);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed, please try again.");
+    }
+  };
 
   return (
     <PageWrapper>
@@ -84,7 +109,9 @@ export default function Profile() {
         {/* 🎯 Dashboard Header */}
         <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
           <h1 className="text-3xl font-bold mb-2">🎯 User Dashboard</h1>
-          <p className="text-pink-100">Manage your profile, settings, and preferences</p>
+          <p className="text-pink-100">
+            Manage your profile, settings, and preferences
+          </p>
         </div>
 
         {/* 📊 Dashboard Grid */}
@@ -92,13 +119,17 @@ export default function Profile() {
           {/* Left Column - Profile & Bio */}
           <div className="space-y-6">
             <div className="bg-white shadow-lg rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">👤 Profile Information</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                👤 Profile Information
+              </h2>
               <ProfileCard user={user} />
             </div>
-            
+
             {/* 📝 Edit Bio */}
             <div className="bg-white shadow-lg rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">📝 Biography</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                📝 Biography
+              </h2>
               <div className="space-y-4">
                 {isEditing ? (
                   <>
@@ -106,8 +137,13 @@ export default function Profile() {
                       rows={4}
                       value={newBio}
                       onChange={(e) => setNewBio(e.target.value)}
-                      className="w-full border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-3 rounded-lg bg-white shadow-sm transition-all duration-200 placeholder-gray-500 text-gray-800"
+                      className={`w-full border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 p-3 rounded-lg shadow-sm transition-all duration-200 placeholder-gray-500 ${getTextColor(
+                        bioBg
+                      )}`}
                       placeholder="Tell us about yourself..."
+                      style={{ backgroundColor: bioBg }}
+                      onFocus={() => setBioBg("white")}
+                      onBlur={() => setBioBg("black")}
                     />
                     <div className="flex gap-2">
                       <button
@@ -127,7 +163,9 @@ export default function Profile() {
                 ) : (
                   <>
                     <div className="p-4 bg-gray-50 rounded-lg border">
-                      <p className="text-gray-700">{user.bio || "No bio yet. Click edit to add one!"}</p>
+                      <p className="text-gray-700">
+                        {user.bio || "No bio yet. Click edit to add one!"}
+                      </p>
                     </div>
                     <button
                       onClick={() => setIsEditing(true)}
@@ -150,10 +188,14 @@ export default function Profile() {
 
               {/* Voice & Language Settings */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-700 mb-3">🎤 Voice & Language</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-3">
+                  🎤 Voice & Language
+                </h3>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Preferred Voice</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Preferred Voice
+                    </label>
                     <select
                       value={voiceId}
                       onChange={(e) => setVoiceId(e.target.value)}
@@ -168,7 +210,9 @@ export default function Profile() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Preferred Language</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Preferred Language
+                    </label>
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
@@ -187,7 +231,9 @@ export default function Profile() {
 
               {/* Translation Settings */}
               <div className="space-y-4 border-t pt-4">
-                <h3 className="text-lg font-medium text-gray-700 mb-3">🌍 Translation</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-3">
+                  🌍 Translation
+                </h3>
                 <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
                   <input
                     type="checkbox"
@@ -195,7 +241,9 @@ export default function Profile() {
                     onChange={() => setTranslateEnabled(!translateEnabled)}
                     className="w-5 h-5 text-purple-600 border-2 border-gray-300 rounded focus:ring-purple-500"
                   />
-                  <span className="text-gray-700">Enable Auto-Translation in Chat</span>
+                  <span className="text-gray-700">
+                    Enable Auto-Translation in Chat
+                  </span>
                 </label>
               </div>
 
@@ -209,7 +257,7 @@ export default function Profile() {
                 </button>
               </div>
             </div>
-            
+
             {/* 🛠️ Account Actions */}
             <div className="bg-white shadow-lg rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">
@@ -239,9 +287,30 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* 🖼️ Gallery Section */}
+        {/* 🖼️ Unified Gallery Section */}
         <div className="bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">🖼️ Photo Gallery</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            🖼️ Photo Gallery
+          </h2>
+
+          {/* Inline Upload Widget */}
+          <div className="mb-4">
+            <input
+              type="file"
+              id="galleryUpload"
+              multiple
+              className="hidden"
+              onChange={handleGalleryUpload}
+            />
+            <label
+              htmlFor="galleryUpload"
+              className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg cursor-pointer transition"
+            >
+              📤 Upload New Photos
+            </label>
+          </div>
+
+          {/* Gallery Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {user.gallery?.length > 0 ? (
               user.gallery.map((img, idx) => (
@@ -255,12 +324,6 @@ export default function Profile() {
             ) : (
               <div className="col-span-full text-center py-8">
                 <p className="text-gray-500">No pictures uploaded yet.</p>
-                <button
-                  onClick={() => navigate("/relationship/upload")}
-                  className="mt-2 text-blue-600 hover:text-blue-700 underline"
-                >
-                  Upload your first photo
-                </button>
               </div>
             )}
           </div>
