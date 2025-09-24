@@ -1,4 +1,4 @@
-//src/pages/relationship/MatchMaker.jsx
+//src/pages/relationship/MatchMaker.jsx 
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -8,27 +8,38 @@ import PageWrapper from "@/components/PageWrapper";
 
 const MatchMaker = () => {
   const [matches, setMatches] = useState([]);
+  const [signalMessage, setSignalMessage] = useState("");
+  const [bgColor, setBgColor] = useState("white"); // Track input bg for text contrast
   const user_id = localStorage.getItem("user_id");
 
   useEffect(() => {
     if (!user_id) return;
-
     axios
       .get(`/relationship/match/compatible/${user_id}`)
       .then((res) => setMatches(res.data.matches))
-      .catch((err) => console.error("Error fetching matches", err));
-  }, []);
+      .catch((err) => console.error("❌ Error fetching matches", err));
+  }, [user_id]);
+
+  // Ensure visible text (black on light bg, white on dark bg)
+  const getTextColor = (bg) => {
+    return bg === "white" ? "text-black" : "text-white";
+  };
 
   const sendSignalToUser = async (receiver_id) => {
+    if (!signalMessage.trim()) {
+      alert("⚠️ Please enter a message before sending!");
+      return;
+    }
     try {
       await axios.post("/relationship/match/send", {
         sender_id: user_id,
         receiver_id,
-        signal_message: "I feel we're a perfect match! 💕",
+        signal_message: signalMessage,
       });
       alert("💌 Signal sent successfully!");
+      setSignalMessage("");
     } catch (err) {
-      console.error("Failed to send signal:", err);
+      console.error("❌ Failed to send signal:", err);
     }
   };
 
@@ -50,7 +61,7 @@ const MatchMaker = () => {
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {matches.map((match, i) => (
+            {matches.map((match) => (
               <motion.div
                 key={match.id}
                 whileHover={{ scale: 1.02 }}
@@ -64,6 +75,30 @@ const MatchMaker = () => {
             ))}
           </div>
         )}
+
+        {/* Input for custom signal message */}
+        <div className="mt-10 max-w-xl mx-auto">
+          <textarea
+            value={signalMessage}
+            onChange={(e) => setSignalMessage(e.target.value)}
+            placeholder="Write your signal message..."
+            className={`w-full p-4 rounded-2xl border shadow-md resize-none transition-colors duration-200 ${
+              getTextColor(bgColor)
+            }`}
+            style={{
+              backgroundColor: bgColor,
+            }}
+            onFocus={() => setBgColor("white")}
+            onBlur={() => setBgColor("black")}
+            rows={3}
+          />
+          <button
+            onClick={() => alert("⚠️ Select a user to send a signal!")}
+            className="w-full mt-3 px-6 py-3 bg-pink-600 text-white font-semibold rounded-2xl shadow hover:bg-pink-700 transition"
+          >
+            Send Signal
+          </button>
+        </div>
       </motion.div>
     </PageWrapper>
   );
