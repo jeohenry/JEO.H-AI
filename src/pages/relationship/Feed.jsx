@@ -16,11 +16,11 @@ const Feed = () => {
   const { i18n } = useTranslation();
   const userId = localStorage.getItem("user_id");
 
-  // 🔄 Fetch posts with language support
+  // 🔄 Fetch posts
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get(`/relationship/feed?lang=${i18n.language}`);
+        const res = await axios.get(`/api/relationship/get-posts?lang=${i18n.language}`);
         setPosts(res.data);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
@@ -33,11 +33,9 @@ const Feed = () => {
   const handleLike = async (post_id, liked) => {
     try {
       if (liked) {
-        // Unlike
-        await axios.post("/relationship/unlike-post", { user_id: userId, post_id });
+        await axios.post("/api/relationship/unlike-post", { user_id: userId, post_id });
       } else {
-        // Like
-        await axios.post("/relationship/like-post", { user_id: userId, post_id });
+        await axios.post("/api/relationship/like-post", { user_id: userId, post_id });
       }
 
       setPosts((prev) =>
@@ -58,14 +56,24 @@ const Feed = () => {
     setCommentModalOpen(true);
   };
 
-  // 💾 Save post (placeholder)
-  const handleSave = (post_id) => {
-    alert(`🔖 Save post ${post_id}`);
+  // 💾 Save post
+  const handleSave = async (post_id) => {
+    try {
+      await axios.post("/api/relationship/save-post", { user_id: userId, post_id });
+      alert("Post saved ✅");
+    } catch (error) {
+      console.error("Error saving post:", error);
+    }
   };
 
-  // 📤 Share post (placeholder)
-  const handleShare = (post_id) => {
-    alert(`📤 Share post ${post_id}`);
+  // 📤 Share post
+  const handleShare = async (post_id) => {
+    try {
+      await axios.post("/api/relationship/share-post", { user_id: userId, post_id, platform: "general" });
+      alert("Post shared ✅");
+    } catch (error) {
+      console.error("Error sharing post:", error);
+    }
   };
 
   // ✅ Submit comment
@@ -79,11 +87,11 @@ const Feed = () => {
     if (voiceFile) formData.append("voice", voiceFile);
 
     try {
-      await axios.post("/relationship/comment-post", formData, {
+      const res = await axios.post("/api/relationship/comment-post", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Refresh comments on the post
+      // Update post with new comment
       setPosts((prev) =>
         prev.map((post) =>
           post.id === activePostId
@@ -95,7 +103,7 @@ const Feed = () => {
                     username: "You",
                     text: commentText,
                     created_at: new Date().toISOString(),
-                    voice_url: null, // backend can return real URL
+                    voice_url: res.data.voice_url || null,
                   },
                 ],
               }
@@ -128,7 +136,7 @@ const Feed = () => {
             <motion.div
               key={post.id}
               whileHover={{ scale: 1.01 }}
-              className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md space-y-4"
+              className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md space-y-4 transition"
             >
               <PostCard
                 post={post}
@@ -188,13 +196,15 @@ const Feed = () => {
             placeholder="Type your comment..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded mb-3 dark:bg-gray-900 dark:text-white"
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded mb-3
+                       bg-white text-black dark:bg-gray-900 dark:text-white
+                       focus:outline-none focus:ring-2 focus:ring-pink-500"
           />
           <input
             type="file"
             accept="audio/*"
             onChange={(e) => setVoiceFile(e.target.files[0])}
-            className="mb-4"
+            className="mb-4 w-full text-sm text-gray-600 dark:text-gray-300"
           />
           <div className="flex justify-between">
             <button
@@ -206,7 +216,7 @@ const Feed = () => {
             <button
               onClick={submitComment}
               disabled={!commentText.trim() && !voiceFile}
-              className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 transition"
+              className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 transition disabled:opacity-50"
             >
               Submit
             </button>
