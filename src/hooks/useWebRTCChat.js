@@ -7,7 +7,7 @@ const WS_BASE = API_BASE.replace(
   window.location.protocol === "https:" ? "wss" : "ws"
 );
 
-export const useWebRTCRoom = (roomId, userId) => {
+export const useWebRTCChat = (roomId, userId) => {
   const socketRef = useRef(null);
   const peersRef = useRef({});
   const streamsRef = useRef({});
@@ -58,7 +58,6 @@ export const useWebRTCRoom = (roomId, userId) => {
 
         if (type === "participants") {
           setParticipants(data);
-
           // reset state on reconnect
           peersRef.current = {};
           streamsRef.current = {};
