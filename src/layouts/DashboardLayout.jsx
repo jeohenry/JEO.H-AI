@@ -114,7 +114,7 @@ const DashboardLayout = () => {
             >
               <Menu className="w-5 h-5" />
             </Button>
-            
+
             <ScrollFadeIn variant="fade" delay={0.1}>
               <Button variant="ghost" onClick={toggleTheme}>
                 {theme === "dark" ? <Sun /> : <Moon />}
@@ -170,3 +170,12 @@ const DashboardLayout = () => {
         {/* Animated Page Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <PageWrapper animation="pageFade" key={location.pathname}>
+            <Outlet />
+          </PageWrapper>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardLayout;
