@@ -1,4 +1,4 @@
-//src/pages/Home.jsx
+// src/pages/Home.jsx
 
 import React from "react";
 import { motion } from "framer-motion";
@@ -6,18 +6,18 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
-  FaBrain, FaComments, FaHeartbeat, FaMusic, 
+  FaComments, FaHeartbeat, FaMusic, 
   FaGlobe, FaChartLine, FaPalette 
 } from "react-icons/fa";
 
 export default function Home() {
   const features = [
-    { name: "AI Chat", icon: <FaComments />, path: "/chat", description: "Intelligent conversations" },
-    { name: "Health AI", icon: <FaHeartbeat />, path: "/health", description: "Health analysis & advice" },
-    { name: "Music AI", icon: <FaMusic />, path: "/music", description: "Music creation & mixing" },
-    { name: "Translation", icon: <FaGlobe />, path: "/translate", description: "50+ languages supported" },
-    { name: "Predictions", icon: <FaChartLine />, path: "/predict", description: "AI-powered forecasting" },
-    { name: "Content Creator", icon: <FaPalette />, path: "/content", description: "Creative AI assistance" }
+    { name: "AI Chat", icon: FaComments, path: "/chat", description: "Intelligent conversations" },
+    { name: "Health AI", icon: FaHeartbeat, path: "/health", description: "Health analysis & advice" },
+    { name: "Music AI", icon: FaMusic, path: "/music", description: "Music creation & mixing" },
+    { name: "Translation", icon: FaGlobe, path: "/translate", description: "50+ languages supported" },
+    { name: "Predictions", icon: FaChartLine, path: "/predict", description: "AI-powered forecasting" },
+    { name: "Content Creator", icon: FaPalette, path: "/content", description: "Creative AI assistance" }
   ];
 
   return (
@@ -55,19 +55,43 @@ export default function Home() {
         >
           Explore AI Modules
         </motion.h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * (index + 1) }}
-            >
-              <Card className="h-full hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <div className="text-3xl text-pink-500 mb-4">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">{feature.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">{feature.description}</p>
-                  <Link to={feature.path} className="w-full">
-                    <Button v
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                key={feature.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * (index + 1) }}
+              >
+                <Card className="h-full hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-3xl text-pink-500 mb-4">
+                      <Icon />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">{feature.name}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">{feature.description}</p>
+                    <Link to={feature.path} className="w-full">
+                      <Button className="w-full flex items-center justify-center gap-2 group">
+                        <motion.span
+                          whileHover={{ rotate: 15, scale: 1.2 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          className="text-lg text-pink-500"
+                        >
+                          <Icon />
+                        </motion.span>
+                        <span>Open {feature.name}</span>
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
