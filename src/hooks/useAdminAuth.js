@@ -1,6 +1,6 @@
 // src/hooks/useAdminAuth.js
 import { useNavigate } from "react-router-dom";
-import API from "../api";
+import API from "@/api";
 
 export function useAdminAuth() {
   const navigate = useNavigate();
