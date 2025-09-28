@@ -33,6 +33,7 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.4",
     "react-hot-toast": "^2.4.1",
+    "docx": "^8.5.0",
 
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
