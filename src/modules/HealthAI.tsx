@@ -7,12 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, FileDown } from 'lucide-react';
 import PageWrapper from '../components/PageWrapper';
 import { motion } from 'framer-motion';
-import { slideUp } from '../config/animations';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const API_BASE = (import.meta as any).env.VITE_API_BASE || "http://localhost:8000";
 
 const HealthAI = () => {
   const [symptoms, setSymptoms] = useState('');
@@ -158,10 +157,10 @@ const HealthAI = () => {
     <PageWrapper>
       <motion.div
         className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-6"
-        variants={slideUp}
-        initial="initial"
-        animate="animate"
-        exit="exit"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -40 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {/* Input Form */}
         <Card className="shadow-lg">
