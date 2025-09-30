@@ -1,42 +1,40 @@
-// src/modules/Predict.jsx
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
+import API from "@/api"; // 🔗 use the configured axios instance
 
 export default function Predict() {
-  const [input, setInput] = useState('');
-  const [result, setResult] = useState('');
+  const [input, setInput] = useState("");
+  const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handlePredict = async () => {
     if (!input.trim()) return;
     setLoading(true);
-    setResult('');
+    setResult("");
 
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
-      const response = await fetch(`${API_BASE}/predict/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          context: input,
-          user_id: 'system', // ✅ default user, can be dynamic
-          provider: 'auto',
-          model_name: 'auto',
-          language: 'en'
-        }),
+      const response = await API.post("/predict/", {
+        context: input,
+        user_id: "system", // ✅ default user, can be dynamic
+        provider: "auto",
+        model_name: "auto",
+        language: "en",
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        setResult(data.answer);
-      } else {
-        setResult(`❌ Error: ${data.detail || 'Failed to generate prediction.'}`);
-      }
+      setResult(response.data.answer);
     } catch (error) {
-      setResult('❌ Network error while predicting.');
+      if (error.response) {
+        setResult(
+          `❌ Error: ${
+            error.response.data?.detail || "Failed to generate prediction."
+          }`
+        );
+      } else {
+        setResult("❌ Network error while predicting.");
+      }
     } finally {
       setLoading(false);
     }
@@ -61,9 +59,9 @@ export default function Predict() {
                        focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          <Button 
-            onClick={handlePredict} 
-            disabled={loading} 
+          <Button
+            onClick={handlePredict}
+            disabled={loading}
             className="w-full flex items-center justify-center"
           >
             {loading ? (
@@ -71,13 +69,15 @@ export default function Predict() {
                 <Loader2 className="animate-spin w-4 h-4 mr-2" /> Predicting...
               </>
             ) : (
-              '🚀 Predict'
+              "🚀 Predict"
             )}
           </Button>
 
           {result && (
-            <div className="mt-4 p-4 border rounded-lg shadow-sm 
-                            bg-gray-50 dark:bg-gray-800 text-sm md:text-base">
+            <div
+              className="mt-4 p-4 border rounded-lg shadow-sm 
+                            bg-gray-50 dark:bg-gray-800 text-sm md:text-base"
+            >
               <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-300">
                 📊 Prediction:
               </h4>
