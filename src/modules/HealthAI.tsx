@@ -1,5 +1,4 @@
 // src/modules/HealthAI.tsx
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { motion } from "framer-motion";
 import jsPDF from "jspdf";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { saveAs } from "file-saver";
-import API from "@/api"; // ✅ use centralized API
+import API from "@/api"; // ✅ centralized API
 
 const HealthAI = () => {
   const [symptoms, setSymptoms] = useState("");
@@ -21,7 +20,7 @@ const HealthAI = () => {
   const [loading, setLoading] = useState(false);
 
   /**
-   * 🔹 Unified streaming handler (diagnosis + prescription + advice + analytics)
+   * 🔹 Unified streaming handler (updated version)
    */
   const handleUnifiedStream = async () => {
     if (!symptoms.trim()) return;
@@ -32,14 +31,15 @@ const HealthAI = () => {
     setAnalytics(null);
 
     try {
-      // ✅ use API baseURL + token from @/api.jsx
+      // ✅ baseURL + auth from central API
       const url = `${API.defaults.baseURL}/health/stream`;
+      const auth = API.defaults.headers.common["Authorization"] || "";
 
       const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: API.defaults.headers.common["Authorization"] || "",
+          Authorization: auth,
         },
         body: JSON.stringify({ symptoms }),
       });
