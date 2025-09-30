@@ -1,7 +1,6 @@
 // src/modules/ProgressiveLearningAI.jsx
-
 import React, { useState, useEffect } from "react";
-import axios from "@/api";
+import API from "@/api"; // ✅ always use the configured API instance
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,8 +25,9 @@ const ProgressiveLearningAI = () => {
   const [editPrompt, setEditPrompt] = useState("");
   const [editResponse, setEditResponse] = useState("");
 
+  /* ───────── 📜 Fetch Training History ───────── */
   const fetchTrainings = async () => {
-    const res = await axios.get("/ai/history");
+    const res = await API.get("/ai/history");
     setTrainingList(res.data);
   };
 
@@ -35,13 +35,12 @@ const ProgressiveLearningAI = () => {
     fetchTrainings();
   }, []);
 
+  /* ───────── ❓ Ask AI ───────── */
   const handleAsk = async () => {
     if (!askInput.trim()) return;
     setLoadingAsk(true);
     try {
-      const res = await axios.post("/ai/query", {
-        prompt: askInput,
-      });
+      const res = await API.post("/ai/query", { prompt: askInput });
       setResponse(res.data?.response || "No response.");
     } catch {
       setResponse("❌ Failed to query AI.");
@@ -50,11 +49,13 @@ const ProgressiveLearningAI = () => {
     }
   };
 
+  /* ───────── 🗑️ Delete Training ───────── */
   const handleDelete = async (id) => {
-    await axios.delete(`/ai/delete/${id}`);
+    await API.delete(`/ai/delete/${id}`);
     fetchTrainings();
   };
 
+  /* ───────── ✏️ Edit Training ───────── */
   const handleEdit = (item) => {
     setEditId(item.id);
     setEditPrompt(item.prompt || item.input_text);
@@ -62,7 +63,7 @@ const ProgressiveLearningAI = () => {
   };
 
   const handleSaveEdit = async (id) => {
-    await axios.put(`/ai/train/${id}`, {
+    await API.put(`/ai/train/${id}`, {
       input: editPrompt,
       output: editResponse,
     });
@@ -72,25 +73,28 @@ const ProgressiveLearningAI = () => {
     fetchTrainings();
   };
 
+  /* ───────── ⬇️ Export ───────── */
   const handleExport = async () => {
-    const res = await axios.get("/ai/export");
+    const res = await API.get("/ai/export");
     const blob = new Blob([JSON.stringify(res.data, null, 2)], {
       type: "application/json",
     });
     saveAs(blob, "progressive_ai_memory.json");
   };
 
+  /* ───────── ⬆️ Import ───────── */
   const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    await axios.post("/ai/import", formData, {
+    await API.post("/ai/import", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     fetchTrainings();
   };
 
+  /* ───────── UI ───────── */
   return (
     <div className="max-w-4xl mx-auto mt-10 p-4 md:p-6 space-y-8">
       <h2 className="text-2xl font-bold text-center">
