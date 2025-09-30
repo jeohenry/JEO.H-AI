@@ -1,6 +1,6 @@
 // src/modules/ProgressiveLearningAI.jsx
 import React, { useState, useEffect } from "react";
-import API from "@/api"; // ✅ always use the configured API instance
+import API from "@/api"; // ✅ unified: always use your configured API instance
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,8 +27,12 @@ const ProgressiveLearningAI = () => {
 
   /* ───────── 📜 Fetch Training History ───────── */
   const fetchTrainings = async () => {
-    const res = await API.get("/ai/history");
-    setTrainingList(res.data);
+    try {
+      const res = await API.get("/ai/history");
+      setTrainingList(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch trainings:", err);
+    }
   };
 
   useEffect(() => {
@@ -42,7 +46,7 @@ const ProgressiveLearningAI = () => {
     try {
       const res = await API.post("/ai/query", { prompt: askInput });
       setResponse(res.data?.response || "No response.");
-    } catch {
+    } catch (err) {
       setResponse("❌ Failed to query AI.");
     } finally {
       setLoadingAsk(false);
@@ -51,8 +55,12 @@ const ProgressiveLearningAI = () => {
 
   /* ───────── 🗑️ Delete Training ───────── */
   const handleDelete = async (id) => {
-    await API.delete(`/ai/delete/${id}`);
-    fetchTrainings();
+    try {
+      await API.delete(`/ai/delete/${id}`);
+      fetchTrainings();
+    } catch (err) {
+      console.error("❌ Failed to delete training:", err);
+    }
   };
 
   /* ───────── ✏️ Edit Training ───────── */
@@ -63,23 +71,31 @@ const ProgressiveLearningAI = () => {
   };
 
   const handleSaveEdit = async (id) => {
-    await API.put(`/ai/train/${id}`, {
-      input: editPrompt,
-      output: editResponse,
-    });
-    setEditId(null);
-    setEditPrompt("");
-    setEditResponse("");
-    fetchTrainings();
+    try {
+      await API.put(`/ai/train/${id}`, {
+        input: editPrompt,
+        output: editResponse,
+      });
+      setEditId(null);
+      setEditPrompt("");
+      setEditResponse("");
+      fetchTrainings();
+    } catch (err) {
+      console.error("❌ Failed to save edit:", err);
+    }
   };
 
   /* ───────── ⬇️ Export ───────── */
   const handleExport = async () => {
-    const res = await API.get("/ai/export");
-    const blob = new Blob([JSON.stringify(res.data, null, 2)], {
-      type: "application/json",
-    });
-    saveAs(blob, "progressive_ai_memory.json");
+    try {
+      const res = await API.get("/ai/export");
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], {
+        type: "application/json",
+      });
+      saveAs(blob, "progressive_ai_memory.json");
+    } catch (err) {
+      console.error("❌ Failed to export memory:", err);
+    }
   };
 
   /* ───────── ⬆️ Import ───────── */
@@ -88,10 +104,14 @@ const ProgressiveLearningAI = () => {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    await API.post("/ai/import", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    fetchTrainings();
+    try {
+      await API.post("/ai/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      fetchTrainings();
+    } catch (err) {
+      console.error("❌ Failed to import memory:", err);
+    }
   };
 
   /* ───────── UI ───────── */
