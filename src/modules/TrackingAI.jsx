@@ -7,7 +7,7 @@ import { Loader2, LocateFixed, FileDown, FileText } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 import { motion } from "framer-motion";
 import { slideUp } from "../config/animations";
-import { trackTarget, exportTrackingReport } from "@/api";  // ✅ use centralized API
+import API from "@/api";  // ✅ Import only Axios instance
 
 const TrackingAI = () => {
   const [target, setTarget] = useState("");
@@ -21,9 +21,9 @@ const TrackingAI = () => {
     setStatus("");
     setStorageUrl("");
     try {
-      const data = await trackTarget(target);
-      setStatus(data.status);
-      setStorageUrl(data.storage_url);
+      const res = await API.post("/tracking/query", { target });
+      setStatus(res.data.status);
+      setStorageUrl(res.data.storage_url);
     } catch (err) {
       console.error(err);
       setStatus("❌ Error tracking the target.");
@@ -34,9 +34,13 @@ const TrackingAI = () => {
 
   const handleExport = async (format) => {
     try {
-      const blobData = await exportTrackingReport(target, status, format);
+      const res = await API.post(
+        `/tracking/export/${format}`,
+        { target, status },
+        { responseType: "blob" }
+      );
 
-      const blob = new Blob([blobData], {
+      const blob = new Blob([res.data], {
         type:
           format === "pdf"
             ? "application/pdf"
