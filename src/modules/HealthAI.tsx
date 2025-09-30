@@ -1,23 +1,22 @@
 // src/modules/HealthAI.tsx
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileDown } from 'lucide-react';
-import PageWrapper from '../components/PageWrapper';
-import { motion } from 'framer-motion';
-import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
-import { saveAs } from 'file-saver';
-
-const API_BASE = (import.meta as any).env.VITE_API_BASE || "http://localhost:8000";
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, FileDown } from "lucide-react";
+import PageWrapper from "../components/PageWrapper";
+import { motion } from "framer-motion";
+import jsPDF from "jspdf";
+import { Document, Packer, Paragraph, TextRun } from "docx";
+import { saveAs } from "file-saver";
+import API from "@/api"; // ✅ use centralized API
 
 const HealthAI = () => {
-  const [symptoms, setSymptoms] = useState('');
-  const [diagnosis, setDiagnosis] = useState('');
-  const [prescription, setPrescription] = useState('');
-  const [healthAdvice, setHealthAdvice] = useState('');
+  const [symptoms, setSymptoms] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
+  const [prescription, setPrescription] = useState("");
+  const [healthAdvice, setHealthAdvice] = useState("");
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,15 +26,21 @@ const HealthAI = () => {
   const handleUnifiedStream = async () => {
     if (!symptoms.trim()) return;
     setLoading(true);
-    setDiagnosis('');
-    setPrescription('');
-    setHealthAdvice('');
+    setDiagnosis("");
+    setPrescription("");
+    setHealthAdvice("");
     setAnalytics(null);
 
     try {
-      const res = await fetch(`${API_BASE}/health/stream`, {
+      // ✅ use API baseURL + token from @/api.jsx
+      const url = `${API.defaults.baseURL}/health/stream`;
+
+      const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: API.defaults.headers.common["Authorization"] || "",
+        },
         body: JSON.stringify({ symptoms }),
       });
 
@@ -83,6 +88,7 @@ const HealthAI = () => {
         }
       }
     } catch (err) {
+      console.error("❌ Streaming error:", err);
       setDiagnosis("❌ Error streaming results.");
     } finally {
       setLoading(false);
@@ -118,7 +124,12 @@ const HealthAI = () => {
     addSection("🩺 Diagnosis:", diagnosis);
     addSection("💊 Prescription:", prescription);
     addSection("💡 AI Health Advice:", healthAdvice);
-    addSection("📈 Analytics Summary:", typeof analytics === "string" ? analytics : JSON.stringify(analytics, null, 2));
+    addSection(
+      "📈 Analytics Summary:",
+      typeof analytics === "string"
+        ? analytics
+        : JSON.stringify(analytics, null, 2)
+    );
 
     doc.save("AI_Health_Report.pdf");
   };
@@ -129,7 +140,9 @@ const HealthAI = () => {
   const handleExportDocx = async () => {
     const now = new Date().toLocaleString();
     const children: Paragraph[] = [
-      new Paragraph({ children: [new TextRun({ text: "📊 AI Health Report", bold: true, size: 32 })] }),
+      new Paragraph({
+        children: [new TextRun({ text: "📊 AI Health Report", bold: true, size: 32 })],
+      }),
       new Paragraph(`Date: ${now}`),
       new Paragraph({ children: [new TextRun({ text: "Symptoms:", bold: true })] }),
       new Paragraph(symptoms || "N/A"),
@@ -146,7 +159,12 @@ const HealthAI = () => {
     addSection("🩺 Diagnosis:", diagnosis);
     addSection("💊 Prescription:", prescription);
     addSection("💡 AI Health Advice:", healthAdvice);
-    addSection("📈 Analytics Summary:", typeof analytics === "string" ? analytics : JSON.stringify(analytics, null, 2));
+    addSection(
+      "📈 Analytics Summary:",
+      typeof analytics === "string"
+        ? analytics
+        : JSON.stringify(analytics, null, 2)
+    );
 
     const doc = new Document({ sections: [{ children }] });
     const blob = await Packer.toBlob(doc);
@@ -178,8 +196,16 @@ const HealthAI = () => {
             />
 
             <div className="flex justify-center pt-2">
-              <Button onClick={handleUnifiedStream} disabled={loading} className="w-full">
-                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : '🚀 Get Full AI Health Report'}
+              <Button
+                onClick={handleUnifiedStream}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  "🚀 Get Full AI Health Report"
+                )}
               </Button>
             </div>
           </CardContent>
@@ -189,7 +215,9 @@ const HealthAI = () => {
         {(diagnosis || prescription || healthAdvice || analytics) && (
           <Card className="bg-gradient-to-br from-green-50 via-yellow-50 to-blue-50 shadow-lg border">
             <CardContent className="p-5 space-y-4">
-              <h3 className="text-2xl font-bold text-center text-indigo-700">📊 AI Health Report</h3>
+              <h3 className="text-2xl font-bold text-center text-indigo-700">
+                📊 AI Health Report
+              </h3>
 
               {diagnosis && (
                 <div>
@@ -214,19 +242,29 @@ const HealthAI = () => {
 
               {analytics && (
                 <div>
-                  <h4 className="text-lg font-semibold text-indigo-700">📈 Analytics Summary</h4>
+                  <h4 className="text-lg font-semibold text-indigo-700">
+                    📈 Analytics Summary
+                  </h4>
                   <pre className="whitespace-pre-wrap text-sm">
-                    {typeof analytics === "string" ? analytics : JSON.stringify(analytics, null, 2)}
+                    {typeof analytics === "string"
+                      ? analytics
+                      : JSON.stringify(analytics, null, 2)}
                   </pre>
                 </div>
               )}
 
               {/* Export Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button onClick={handleExportPDF} className="flex-1 bg-red-500 hover:bg-red-600">
+                <Button
+                  onClick={handleExportPDF}
+                  className="flex-1 bg-red-500 hover:bg-red-600"
+                >
                   <FileDown className="w-4 h-4 mr-2" /> Export PDF
                 </Button>
-                <Button onClick={handleExportDocx} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                <Button
+                  onClick={handleExportDocx}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
                   <FileDown className="w-4 h-4 mr-2" /> Export Word
                 </Button>
               </div>
