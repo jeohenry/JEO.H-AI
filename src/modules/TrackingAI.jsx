@@ -1,35 +1,32 @@
 // src/modules/TrackingAI.jsx
-
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, LocateFixed, FileDown, FileText } from 'lucide-react';
-import PageWrapper from '../components/PageWrapper';
-import { motion } from 'framer-motion';
-import { slideUp } from '../config/animations';
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, LocateFixed, FileDown, FileText } from "lucide-react";
+import PageWrapper from "../components/PageWrapper";
+import { motion } from "framer-motion";
+import { slideUp } from "../config/animations";
+import { trackTarget, exportTrackingReport } from "@/api";  // ✅ use centralized API
 
 const TrackingAI = () => {
-  const [target, setTarget] = useState('');
-  const [status, setStatus] = useState('');
-  const [storageUrl, setStorageUrl] = useState('');
+  const [target, setTarget] = useState("");
+  const [status, setStatus] = useState("");
+  const [storageUrl, setStorageUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleTrack = async () => {
     if (!target.trim()) return;
     setLoading(true);
-    setStatus('');
-    setStorageUrl('');
+    setStatus("");
+    setStorageUrl("");
     try {
-      const res = await axios.post(`${API_BASE}/tracking/query`, { target });
-      setStatus(res.data.status);
-      setStorageUrl(res.data.storage_url);
+      const data = await trackTarget(target);
+      setStatus(data.status);
+      setStorageUrl(data.storage_url);
     } catch (err) {
       console.error(err);
-      setStatus('❌ Error tracking the target.');
+      setStatus("❌ Error tracking the target.");
     } finally {
       setLoading(false);
     }
@@ -37,14 +34,13 @@ const TrackingAI = () => {
 
   const handleExport = async (format) => {
     try {
-      const res = await axios.post(
-        `${API_BASE}/tracking/export/${format}`,
-        { target, status },
-        { responseType: 'blob' }
-      );
+      const blobData = await exportTrackingReport(target, status, format);
 
-      const blob = new Blob([res.data], {
-        type: format === "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      const blob = new Blob([blobData], {
+        type:
+          format === "pdf"
+            ? "application/pdf"
+            : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
 
       const url = window.URL.createObjectURL(blob);
@@ -121,7 +117,15 @@ const TrackingAI = () => {
 
               {storageUrl && (
                 <p className="text-sm text-gray-500 dark:text-gray-300">
-                  ☁️ Stored securely: <a href={storageUrl} target="_blank" rel="noopener noreferrer" className="underline">View JSON</a>
+                  ☁️ Stored securely:{" "}
+                  <a
+                    href={storageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    View JSON
+                  </a>
                 </p>
               )}
             </CardContent>
