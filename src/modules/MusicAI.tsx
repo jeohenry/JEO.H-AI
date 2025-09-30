@@ -1,14 +1,12 @@
 // src/modules/MusicAI.tsx
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
-import PageWrapper from '@/components/PageWrapper';
-import { motion } from 'framer-motion';
-import { slideUp } from '@/config/animations';
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import React, { useState } from "react";
+import API from "@/api"; // ✅ use the shared API instance
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import PageWrapper from "@/components/PageWrapper";
+import { motion } from "framer-motion";
+import { slideUp } from "@/config/animations";
 
 const MusicAI = () => {
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -30,15 +28,15 @@ const MusicAI = () => {
     setLoading(true);
 
     const formData = new FormData();
-    formData.append('file', audioFile);
+    formData.append("file", audioFile);
 
     try {
-      const res = await axios.post(`${API_BASE}/music/analyze/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await API.post("/music/analyze/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
       setResult(res.data);
     } catch (err) {
-      console.error('Music analysis failed:', err);
+      console.error("Music analysis failed:", err);
     } finally {
       setLoading(false);
     }
@@ -73,7 +71,7 @@ const MusicAI = () => {
               disabled={!audioFile || loading}
               className="w-full"
             >
-              {loading ? <Loader2 className="animate-spin" /> : 'Analyze Music'}
+              {loading ? <Loader2 className="animate-spin" /> : "Analyze Music"}
             </Button>
           </CardContent>
         </Card>
@@ -88,7 +86,7 @@ const MusicAI = () => {
               <p><strong>😌 Mood:</strong> {result.mood}</p>
               <p>
                 <strong>🎶 Suggested Playlist:</strong>{" "}
-                {Array.isArray(result.suggestions) ? result.suggestions.join(', ') : 'N/A'}
+                {Array.isArray(result.suggestions) ? result.suggestions.join(", ") : "N/A"}
               </p>
             </CardContent>
           </Card>
