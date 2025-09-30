@@ -1,6 +1,6 @@
 // src/modules/MusicModule.tsx
+
 import React, { useState, useEffect, DragEvent } from 'react';
-import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,21 +12,22 @@ import ExportButtonGroup from '@/components/music/ExportButtonGroup';
 import MusicVisualizer from '@/components/music/MusicVisualizer';
 import TrackMixer from '@/components/music/TrackMixer';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import API from '@/api'; // 🔗 use your centralized API instance
 
 const MusicModule = () => {
   const [query, setQuery] = useState('');
   const [lyrics, setLyrics] = useState('');
   const [voiceUrl, setVoiceUrl] = useState('');
   const [voiceId, setVoiceId] = useState('default');
-  const [voices, setVoices] = useState([]);
+  const [voices, setVoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [mixing, setMixing] = useState(false);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API_BASE}/music/voices`).then(res => setVoices(res.data.voices || []));
+    API.get('/music/voices')
+      .then(res => setVoices(res.data.voices || []))
+      .catch(() => setVoices([]));
   }, []);
 
   const handleGenerateLyrics = async () => {
@@ -34,7 +35,7 @@ const MusicModule = () => {
     setLoading(true);
     setLyrics('');
     try {
-      const res = await axios.post(`${API_BASE}/music/lyrics`, { prompt: query });
+      const res = await API.post('/music/lyrics', { prompt: query });
       setLyrics(res.data.lyrics);
     } catch {
       setLyrics('Error generating lyrics.');
@@ -47,7 +48,7 @@ const MusicModule = () => {
     if (!lyrics || !voiceId) return;
     setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE}/music/voice`, { text: lyrics, voice_id: voiceId });
+      const res = await API.post('/music/voice', { text: lyrics, voice_id: voiceId });
       setVoiceUrl(res.data.voice_url);
     } catch {
       setVoiceUrl('');
