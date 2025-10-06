@@ -1,45 +1,45 @@
 // src/modules/ContentCreator.jsx
 
-import React, { useState } from 'react';
-import axios from 'axios';
-import PageWrapper from '@/components/PageWrapper';
-import { motion } from 'framer-motion';
-import { slideUp } from '@/config/animations';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState } from "react";
+import API from "@/api"; // ✅ Use your configured axios instance
+import PageWrapper from "@/components/PageWrapper";
+import { motion } from "framer-motion";
+import { slideUp } from "@/config/animations";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
-  SelectItem
-} from '@/components/ui/select';
+  SelectItem,
+} from "@/components/ui/select";
 import { Download } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
-
 const ContentCreator = () => {
-  const [prompt, setPrompt] = useState('');
-  const [contentType, setContentType] = useState('blog');
-  const [result, setResult] = useState('');
+  const [prompt, setPrompt] = useState("");
+  const [contentType, setContentType] = useState("blog");
+  const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Parallel API calls
+  /* ───────── 🧠 Generate Content ───────── */
   const handleGenerate = async () => {
     if (!prompt) return;
     setLoading(true);
+
     try {
+      // ✅ Use the shared API instance for both requests
       const [defaultRes, templateRes] = await Promise.all([
-        axios.post(`${API_BASE}/content/create`, {
+        API.post("/content/create", {
           prompt,
           content_type: contentType,
         }),
-        axios.post(`${API_BASE}/generate-content`, {
+        API.post("/generate-content", {
           topic: prompt,
           content_type: contentType,
-          model: "auto"
-        })
+          model: "auto",
+        }),
       ]);
 
       const combined =
@@ -48,13 +48,14 @@ const ContentCreator = () => {
 
       setResult(combined);
     } catch (err) {
-      console.error(err);
-      setResult('❌ Error generating combined content.');
+      console.error("Error generating content:", err);
+      setResult("❌ Error generating combined content.");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ───────── 💾 Export Functions ───────── */
   const handleExport = (format) => {
     if (!result) return;
     let blob;
@@ -65,7 +66,9 @@ const ContentCreator = () => {
     } else if (format === "docx") {
       blob = new Blob(
         [`Content Type: ${contentType}\n\n${result}`],
-        { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
+        {
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        }
       );
     } else if (format === "pdf") {
       import("jspdf").then(({ default: jsPDF }) => {
@@ -98,6 +101,7 @@ const ContentCreator = () => {
     URL.revokeObjectURL(link.href);
   };
 
+  /* ───────── 💡 UI ───────── */
   return (
     <PageWrapper>
       <motion.div
@@ -114,7 +118,6 @@ const ContentCreator = () => {
           Generate blogs, scripts, stories, ads, and more with AI.
         </p>
 
-        {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Input Section */}
           <Card className="shadow-lg rounded-2xl border border-gray-200 dark:border-gray-700">
@@ -154,10 +157,10 @@ const ContentCreator = () => {
                 />
               </div>
 
-              {/* Single Action Button */}
+              {/* Action Button */}
               <div className="flex justify-end">
                 <Button onClick={handleGenerate} disabled={loading || !prompt}>
-                  {loading ? 'Generating...' : 'Generate Content'}
+                  {loading ? "Generating..." : "Generate Content"}
                 </Button>
               </div>
             </CardContent>
