@@ -1,61 +1,56 @@
 // src/modules/Advertising.tsx
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Loader2, Download } from 'lucide-react';
-import PageWrapper from '../components/PageWrapper';
-import { motion } from 'framer-motion';
-import { slideUp } from '../config/animations';
+import React, { useState } from "react";
+import API, { BASE_URL } from "@/api"; // ✅ Import both API instance & BASE_URL
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Download } from "lucide-react";
+import PageWrapper from "../components/PageWrapper";
+import { motion } from "framer-motion";
+import { slideUp } from "../config/animations";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-
-const API_BASE = `${import.meta.env.VITE_API_BASE}/advertising`;
+} from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const Advertising = () => {
   const [formData, setFormData] = useState({
-    product: '',
-    audience: '',
-    media_type: 'text',
+    product: "",
+    audience: "",
+    media_type: "text",
   });
 
   const [result, setResult] = useState({
-    copy: '',
-    strategy: '',
-    pitch: '',
-    imageUrl: '',
-    videoUrl: '',
+    copy: "",
+    strategy: "",
+    pitch: "",
+    imageUrl: "",
+    videoUrl: "",
   });
 
   const [blobKey, setBlobKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
   };
 
   const generateAds = async () => {
     const { product, audience, media_type } = formData;
     if (!product || !audience) {
-      setError('⚠️ Please provide both product/service and target audience.');
+      setError("⚠️ Please provide both product/service and target audience.");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE}/`, {
+      // ✅ Use centralized API instance
+      const response = await API.post("/advertising/", {
         product,
         audience,
         media_type,
@@ -63,26 +58,26 @@ const Advertising = () => {
 
       setResult({
         copy: response.data.ad_text,
-        strategy: response.data.strategy || '',
-        pitch: response.data.pitch || '',
-        imageUrl: response.data.image_url || '',
-        videoUrl: response.data.video_url || '',
+        strategy: response.data.strategy || "",
+        pitch: response.data.pitch || "",
+        imageUrl: response.data.image_url || "",
+        videoUrl: response.data.video_url || "",
       });
 
       setBlobKey(response.data.blob_key || null);
     } catch (err) {
       console.error(err);
-      setError('❌ Something went wrong. Please try again.');
+      setError("❌ Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const clearAll = () => {
-    setFormData({ product: '', audience: '', media_type: 'text' });
-    setResult({ copy: '', strategy: '', pitch: '', imageUrl: '', videoUrl: '' });
+    setFormData({ product: "", audience: "", media_type: "text" });
+    setResult({ copy: "", strategy: "", pitch: "", imageUrl: "", videoUrl: "" });
     setBlobKey(null);
-    setError('');
+    setError("");
   };
 
   return (
@@ -132,18 +127,10 @@ const Advertising = () => {
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-          <Button
-            onClick={generateAds}
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
-            {loading ? <Loader2 className="animate-spin w-4 h-4" /> : '⚙️ Generate Ad'}
+          <Button onClick={generateAds} disabled={loading} className="w-full sm:w-auto">
+            {loading ? <Loader2 className="animate-spin w-4 h-4" /> : "⚙️ Generate Ad"}
           </Button>
-          <Button
-            variant="outline"
-            onClick={clearAll}
-            className="w-full sm:w-auto"
-          >
+          <Button variant="outline" onClick={clearAll} className="w-full sm:w-auto">
             🔄 Clear
           </Button>
         </div>
@@ -181,7 +168,7 @@ const Advertising = () => {
                 </AccordionItem>
               </Accordion>
 
-              {/* Image with modal + download */}
+              {/* Image Section */}
               {result.imageUrl && (
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold text-purple-700">
@@ -203,9 +190,9 @@ const Advertising = () => {
                       />
                       <Button
                         onClick={() => {
-                          const link = document.createElement('a');
+                          const link = document.createElement("a");
                           link.href = result.imageUrl;
-                          link.download = 'advertisement.png';
+                          link.download = "advertisement.png";
                           link.click();
                         }}
                         className="w-full sm:w-auto flex items-center gap-2"
@@ -217,7 +204,7 @@ const Advertising = () => {
                 </div>
               )}
 
-              {/* Video with modal + download */}
+              {/* Video Section */}
               {result.videoUrl && (
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold text-pink-700">
@@ -225,28 +212,21 @@ const Advertising = () => {
                   </h3>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <video
-                        controls
-                        className="w-full rounded-xl shadow cursor-pointer"
-                      >
+                      <video controls className="w-full rounded-xl shadow cursor-pointer">
                         <source src={result.videoUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
                     </DialogTrigger>
                     <DialogContent className="max-w-full max-h-full p-2 space-y-4">
-                      <video
-                        controls
-                        autoPlay
-                        className="w-full h-auto rounded-xl"
-                      >
+                      <video controls autoPlay className="w-full h-auto rounded-xl">
                         <source src={result.videoUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
                       <Button
                         onClick={() => {
-                          const link = document.createElement('a');
+                          const link = document.createElement("a");
                           link.href = result.videoUrl;
-                          link.download = 'advertisement.mp4';
+                          link.download = "advertisement.mp4";
                           link.click();
                         }}
                         className="w-full sm:w-auto flex items-center gap-2"
@@ -258,12 +238,13 @@ const Advertising = () => {
                 </div>
               )}
 
+              {/* ✅ Dynamic Export PDF Link */}
               {blobKey && (
                 <Button
                   variant="outline"
                   className="mt-2 sm:mt-4 w-full sm:w-auto"
                   onClick={() =>
-                    window.open(`${API_BASE}/export-pdf/${blobKey}`, '_blank')
+                    window.open(`${BASE_URL}/advertising/export-pdf/${blobKey}`, "_blank")
                   }
                 >
                   📄 Export to PDF
