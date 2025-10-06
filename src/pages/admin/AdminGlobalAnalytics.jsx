@@ -1,7 +1,6 @@
 // src/pages/admin/AdminGlobalAnalytics.jsx
-
 import React, { useEffect, useState, useRef } from "react";
-import { fetchGlobalAnalytics } from "@/api";
+import API from "@/api"; // ✅ Import the Axios instance directly
 import { Bar } from "react-chartjs-2";
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
@@ -33,20 +32,22 @@ const AdminGlobalAnalytics = () => {
   const chartRef = useRef(null);
   const wsRef = useRef(null);
 
-  const fetchData = () => {
-    fetchGlobalAnalytics()
-      .then((res) => {
-        setData(res.data);
-        setLoading(false);
-        updateChart(res.data);
-      })
-      .catch((err) => console.error("Failed to load analytics", err));
+  const fetchData = async () => {
+    try {
+      const res = await API.get("/admin/analytics/global"); // ✅ Direct Axios call
+      setData(res.data);
+      setLoading(false);
+      updateChart(res.data);
+    } catch (err) {
+      console.error("Failed to load analytics", err);
+      setLoading(false);
+    }
   };
 
   const setupWebSocket = () => {
     const token = localStorage.getItem("token");
     const socket = new WebSocket(
-      `ws://localhost:8000/ws/admin/analytics?token=${token}`
+      `${API.defaults.baseURL.replace(/^http/, "ws")}/ws/admin/analytics?token=${token}`
     );
     wsRef.current = socket;
 
@@ -148,9 +149,7 @@ const AdminGlobalAnalytics = () => {
                 <td className="font-bold px-2">{d}</td>
                 {hours.map((h, hourIdx) => {
                   const value = moduleMap[dayIdx][hourIdx];
-                  const color = `rgba(70, 130, 180, ${
-                    Math.min(1, value / 30 + 0.2)
-                  })`;
+                  const color = `rgba(70, 130, 180, ${Math.min(1, value / 30 + 0.2)})`;
                   return (
                     <td
                       key={`${d}-${h}`}
@@ -208,7 +207,6 @@ const AdminGlobalAnalytics = () => {
         {new Date().toLocaleTimeString()}
       </p>
 
-      {/* Search input (responsive + visible) */}
       <div className="mt-4 mb-6">
         <input
           type="text"
@@ -216,14 +214,10 @@ const AdminGlobalAnalytics = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="🔍 Search module..."
           className="w-full sm:w-1/2 p-3 rounded-md border shadow focus:outline-none"
-          style={{
-            backgroundColor: "#fff",
-            color: "#000",
-          }}
+          style={{ backgroundColor: "#fff", color: "#000" }}
         />
       </div>
 
-      {/* Bar Chart */}
       <div className="mt-4 max-w-full sm:max-w-3xl">
         <Bar
           data={barChartData}
@@ -234,7 +228,6 @@ const AdminGlobalAnalytics = () => {
         />
       </div>
 
-      {/* Summary grid */}
       <div className="summary-grid flex flex-wrap gap-4 mt-8">
         {Object.entries(data)
           .filter(([key]) =>
@@ -259,7 +252,6 @@ const AdminGlobalAnalytics = () => {
       </h3>
       {renderHeatmap()}
 
-      {/* Export buttons */}
       <div className="mt-6 flex flex-wrap gap-4">
         <button
           onClick={handleDownloadCSV}
