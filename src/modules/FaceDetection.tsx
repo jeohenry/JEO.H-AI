@@ -1,15 +1,15 @@
 // src/modules/FaceDetection.tsx
 
-import React, { useState, DragEvent } from 'react';
-import axios from 'axios';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2, Upload, ImageIcon } from 'lucide-react';
-import PageWrapper from '@/components/PageWrapper';
-import { motion } from 'framer-motion';
-import { slideUp } from '@/config/animations';
+import React, { useState, DragEvent } from "react";
+import { API } from "@/api"; // ✅ Unified to use named API import
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, Upload, ImageIcon } from "lucide-react";
+import PageWrapper from "@/components/PageWrapper";
+import { motion } from "framer-motion";
+import { slideUp } from "@/config/animations";
 
-// ✅ Use env var for API base, fallback to localhost
+// ✅ Use environment variable or fallback
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const FaceDetection = () => {
@@ -19,17 +19,20 @@ const FaceDetection = () => {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
+  // --- Handle selected file
   const handleFile = (file: File) => {
     setImage(file);
     setPreview(URL.createObjectURL(file));
     setResult(null);
   };
 
+  // --- Handle manual file input
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handleFile(file);
   };
 
+  // --- Handle drag events
   const handleDrag = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -40,6 +43,7 @@ const FaceDetection = () => {
     }
   };
 
+  // --- Handle drop event
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -49,19 +53,21 @@ const FaceDetection = () => {
     }
   };
 
+  // --- Face detection API call
   const detectFace = async () => {
     if (!image) return;
     setLoading(true);
+
     const formData = new FormData();
-    formData.append('file', image);
+    formData.append("file", image);
 
     try {
-      const res = await axios.post(`${API_BASE}/face/detect`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await API.post(`${API_BASE}/face/detect`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
       setResult(res.data);
     } catch (err) {
-      console.error('Face detection error:', err);
+      console.error("Face detection error:", err);
     } finally {
       setLoading(false);
     }
@@ -80,7 +86,7 @@ const FaceDetection = () => {
           🧠 Face Detection AI
         </h2>
 
-        {/* File Upload + Drag & Drop */}
+        {/* --- File Upload & Drag-and-Drop Area --- */}
         <div
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -101,9 +107,12 @@ const FaceDetection = () => {
           ) : (
             <div className="flex flex-col items-center text-gray-500 dark:text-gray-400">
               <ImageIcon className="w-12 h-12 mb-2" />
-              <p className="text-sm">Drag & drop an image here, or click below to select</p>
+              <p className="text-sm">
+                Drag & drop an image here, or click below to select
+              </p>
             </div>
           )}
+
           <input
             type="file"
             accept="image/*"
@@ -119,37 +128,52 @@ const FaceDetection = () => {
           </label>
         </div>
 
-        {/* Detect Button */}
+        {/* --- Detect Button --- */}
         <div className="flex justify-center">
-          <Button 
-            onClick={detectFace} 
-            disabled={loading || !image} 
+          <Button
+            onClick={detectFace}
+            disabled={loading || !image}
             className="w-full sm:w-auto px-6 py-2"
           >
             {loading && <Loader2 className="animate-spin mr-2" />}
-            {loading ? 'Processing...' : 'Detect Face'}
+            {loading ? "Processing..." : "Detect Face"}
           </Button>
         </div>
 
-        {/* Results */}
+        {/* --- Results --- */}
         {result && (
           <Card className="shadow-md bg-white dark:bg-gray-900">
             <CardContent className="p-4 space-y-4">
               <h3 className="text-xl font-semibold text-green-700 dark:text-green-400">
                 🎯 Detected Faces:
               </h3>
+
               {Array.isArray(result.faces) && result.faces.length > 0 ? (
                 result.faces.map((face: any, idx: number) => (
                   <div
                     key={idx}
-                    className="p-4 bg-gray-100 dark:bg-gray-800 
-                               rounded-xl border dark:border-gray-700 
-                               text-black dark:text-white"
+                    className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl border dark:border-gray-700 text-black dark:text-white"
                   >
-                    {face.age && <p><strong>Age:</strong> {face.age}</p>}
-                    {face.gender && <p><strong>Gender:</strong> {face.gender}</p>}
-                    {face.emotion && <p><strong>Emotion:</strong> {face.emotion}</p>}
-                    {face.box && <p><strong>Box:</strong> {JSON.stringify(face.box)}</p>}
+                    {face.age && (
+                      <p>
+                        <strong>Age:</strong> {face.age}
+                      </p>
+                    )}
+                    {face.gender && (
+                      <p>
+                        <strong>Gender:</strong> {face.gender}
+                      </p>
+                    )}
+                    {face.emotion && (
+                      <p>
+                        <strong>Emotion:</strong> {face.emotion}
+                      </p>
+                    )}
+                    {face.box && (
+                      <p>
+                        <strong>Box:</strong> {JSON.stringify(face.box)}
+                      </p>
+                    )}
                   </div>
                 ))
               ) : (
