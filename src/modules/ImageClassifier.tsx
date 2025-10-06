@@ -7,8 +7,7 @@ import { UploadCloud } from "lucide-react";
 import PageWrapper from "@/components/PageWrapper";
 import { motion } from "framer-motion";
 import { slideUp } from "@/config/animations";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000/api";
+import API from "@/api"; // ✅ Import directly from axios instance
 
 const ImageClassifier = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -33,13 +32,12 @@ const ImageClassifier = () => {
     formData.append("file", selectedFile);
 
     try {
-      const response = await fetch(`${API_BASE}/vision/classify`, {
-        method: "POST",
-        body: formData,
+      // ✅ Using imported axios instance (no need for fetch or API_BASE)
+      const response = await API.post("/vision/classify", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const data = await response.json();
-      setResult(data.result);
+      setResult(response.data.result);
     } catch (err) {
       console.error("Classification error:", err);
       setResult({ label: "Error", confidence: 0 });
