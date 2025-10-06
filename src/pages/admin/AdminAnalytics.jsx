@@ -2,8 +2,15 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { Line, Pie } from "react-chartjs-2";
-import { fetchAnalyticsSummary } from "@/api";
-import { Chart, LineElement, CategoryScale, LinearScale, PointElement, ArcElement } from "chart.js";
+import API from "@/api"; // ✅ Direct axios import
+import {
+  Chart,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  ArcElement,
+} from "chart.js";
 import { saveAs } from "file-saver";
 
 Chart.register(LineElement, CategoryScale, LinearScale, PointElement, ArcElement);
@@ -15,16 +22,15 @@ const AdminAnalytics = () => {
   const [userCount, setUserCount] = useState(0);
   const wsRef = useRef(null);
 
-  // === Fetch data ===
-  const fetchData = () => {
-    fetchAnalyticsSummary()
-      .then((res) => {
-        setData(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch analytics", err);
-      });
+  // === Fetch data directly via API ===
+  const fetchData = async () => {
+    try {
+      const res = await API.get("/admin/analytics/summary");
+      setData(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch analytics", err);
+    }
   };
 
   // === Setup WebSocket ===
