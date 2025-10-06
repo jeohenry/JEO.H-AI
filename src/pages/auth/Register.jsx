@@ -1,7 +1,8 @@
 // src/pages/Auth/Register.jsx
+
 import React, { useState, useEffect } from "react";
-import axios from "@/api";
 import { useNavigate } from "react-router-dom";
+import API from "@/api"; // ✅ Import the preconfigured Axios instance
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -21,14 +22,16 @@ const Register = () => {
     }
   }, [navigate]);
 
+  // ✅ Handle input change
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ✅ Handle registration
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/relationship/register", form); // ✅ unified backend path
+      await API.post("/relationship/register", form); // ✅ unified backend path
       alert("Registration successful. Please check your email.");
       navigate("/relationship/login");
     } catch (err) {
@@ -48,7 +51,7 @@ const Register = () => {
 
         {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
 
-        {/* Input Field Reusable Style */}
+        {/* ✅ Input Fields */}
         {[
           { name: "name", type: "text", placeholder: "Full Name" },
           { name: "username", type: "text", placeholder: "Username" },
