@@ -1,7 +1,8 @@
 // src/pages/auth/PasswordReset.jsx
+
 import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import axios from "@/api";
+import API from "@/api"; // ✅ Import the preconfigured Axios instance
 
 const PasswordReset = () => {
   const [searchParams] = useSearchParams();
@@ -13,22 +14,22 @@ const PasswordReset = () => {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState(""); // "sent", "done", or ""
 
-  // Step 1: Request reset link
+  // ✅ Step 1: Request password reset link
   const handleRequest = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/relationship/password-reset", { email });
+      await API.post("/relationship/password-reset", { email });
       setStatus("sent");
     } catch (err) {
       alert(err.response?.data?.detail || "Error sending reset email");
     }
   };
 
-  // Step 2: Reset password
+  // ✅ Step 2: Confirm and set new password
   const handleReset = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/relationship/password-reset/confirm", {
+      await API.post("/relationship/password-reset/confirm", {
         email,
         new_password: password,
       });
