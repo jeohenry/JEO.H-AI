@@ -1,7 +1,6 @@
 // src/pages/Auth/Login.jsx
-
 import React, { useState, useEffect } from "react";
-import axios from "@/api";
+import API from "@/api"; // ✅ import the preconfigured Axios instance
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -9,12 +8,9 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // ✅ Redirect to language selector if not chosen
   useEffect(() => {
     const lang = localStorage.getItem("i18nextLng");
-    if (!lang) {
-      navigate("/relationship/language");
-    }
+    if (!lang) navigate("/relationship/language");
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -24,10 +20,11 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/login", form);
+      const res = await API.post("/login", form); // ✅ use API instead of axios
       localStorage.setItem("user_id", res.data.user_id);
       navigate("/relationship/Feed");
     } catch (err) {
+      console.error(err);
       setError("Invalid email or password");
     }
   };
