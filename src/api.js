@@ -1,33 +1,39 @@
-// src/api.js
+// src/api.jsx
 import axios from "axios";
 
 /* ───────── 🌍 BASE URL DETECTION ───────── */
 let BASE_URL;
 
-// 1️⃣ Prefer environment variable (Replit, Vercel, Netlify, etc.)
 if (import.meta.env.VITE_API_BASE) {
+  // ✅ Use environment variable (Replit, Vercel, Netlify, etc.)
   BASE_URL = import.meta.env.VITE_API_BASE;
-
-// 2️⃣ Development (Vite dev server / Replit preview)
 } else if (import.meta.env.DEV) {
+  // ✅ Local dev mode
   BASE_URL = import.meta.env.VITE_USE_PROXY ? "/api" : "http://localhost:8000";
-
-// 3️⃣ Fallback → safe default for production
 } else {
-  BASE_URL = "https://your-api.onrender.com"; // 🔗 replace with your actual Render URL
+  // ✅ Production fallback
+  BASE_URL = "https://your-api.onrender.com"; // 🔗 replace with your live API URL
 }
 
 /* ───────── 🔗 AXIOS INSTANCE ───────── */
 const API = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 15000, // prevent hanging requests
+  timeout: 15000,
 });
 
-/* ───────── 🔐 AUTH INTERCEPTOR ───────── */
+/* ───────── 🔐 REQUEST INTERCEPTOR ───────── */
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+    // Keep default header in sync
+    API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete API.defaults.headers.common["Authorization"];
+  }
+
   return config;
 });
 
@@ -36,14 +42,15 @@ API.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
+      // Clear auth info and redirect
       localStorage.removeItem("token");
       localStorage.removeItem("userRole");
       localStorage.removeItem("adminUsername");
-      // Adjust redirect if you're using React Router
       window.location.href = "/admin/login";
     }
     return Promise.reject(error);
   }
 );
 
+export { BASE_URL };
 export default API;
