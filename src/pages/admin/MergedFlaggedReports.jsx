@@ -1,5 +1,4 @@
-// 📁 src/pages/Admin/MergedFlaggedReports.jsx
-
+// src/pages/Admin/MergedFlaggedReports.jsx
 import React, { useEffect, useState } from "react";
 import API from "@/api";
 
@@ -14,11 +13,13 @@ function MergedFlaggedReports() {
     try {
       if (paginated) {
         const res = await API.get(`/admin/flags?page=${page}&filter=${filter}`);
-        setFlags(res.data.items || res.data); // handles both paginated & non-paginated
+        setFlags(res.data.items || res.data);
         setTotalPages(res.data.total_pages || 1);
       } else {
         const res = await API.get("/admin/flags");
-        const filtered = filter ? res.data.filter((f) => f.content_type === filter) : res.data;
+        const filtered = filter
+          ? res.data.filter((f) => f.content_type === filter)
+          : res.data;
         setFlags(filtered);
       }
     } catch (error) {
@@ -90,36 +91,21 @@ function MergedFlaggedReports() {
             key={flag.id}
             className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-lg shadow"
           >
-            <p>
-              <strong>Type:</strong> {flag.content_type}
-            </p>
-            <p>
-              <strong>ID:</strong> {flag.content_id}
-            </p>
-            <p>
-              <strong>Reason:</strong> {flag.reason}
-            </p>
+            <p><strong>Type:</strong> {flag.content_type}</p>
+            <p><strong>ID:</strong> {flag.content_id}</p>
+            <p><strong>Reason:</strong> {flag.reason}</p>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
               {new Date(flag.timestamp).toLocaleString()}
             </p>
 
             <div className="mt-3 flex flex-wrap gap-4">
-              <button
-                onClick={() => deleteFlag(flag)}
-                className="text-red-600 dark:text-red-400 underline"
-              >
+              <button onClick={() => deleteFlag(flag)} className="text-red-600 dark:text-red-400 underline">
                 Delete
               </button>
-              <button
-                onClick={() => markResolved(flag.id)}
-                className="text-blue-600 dark:text-blue-400 underline"
-              >
+              <button onClick={() => markResolved(flag.id)} className="text-blue-600 dark:text-blue-400 underline">
                 Mark Resolved
               </button>
-              <button
-                onClick={() => banUser(flag.user_id)}
-                className="text-orange-600 dark:text-orange-400 underline"
-              >
+              <button onClick={() => banUser(flag.user_id)} className="text-orange-600 dark:text-orange-400 underline">
                 Ban User
               </button>
             </div>
