@@ -2,13 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "@/api";
+import API from "@/api"; // ✅ Import the centralized API instance
 import PageWrapper from "@/components/PageWrapper";
 import { motion } from "framer-motion";
 import { fadeIn, slideUp } from "@/config/animations";
 import { useTranslation } from "react-i18next";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
 
 const TranslatedPost = () => {
   const { id } = useParams();
@@ -21,20 +19,24 @@ const TranslatedPost = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // --- Load post ---
+  /* ───────── 📜 Fetch Post ───────── */
   const fetchPost = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/post/${id}/translated?lang=${lang}`);
+      const res = await API.get(`/post/${id}/translated`, {
+        params: { lang },
+      });
       setPost(res.data);
     } catch (err) {
       console.error("Error loading post:", err);
     }
   };
 
-  // --- Load comments ---
+  /* ───────── 💬 Fetch Comments ───────── */
   const fetchComments = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/comments/${id}?lang=${lang}`);
+      const res = await API.get(`/comments/${id}`, {
+        params: { lang },
+      });
       setComments(res.data);
     } catch (err) {
       console.error("Error loading comments:", err);
@@ -46,12 +48,12 @@ const TranslatedPost = () => {
     fetchComments();
   }, [id, lang]);
 
-  // --- WebSocket for live updates ---
+  /* ───────── 🔁 Live Updates via WebSocket ───────── */
   useEffect(() => {
     if (!id) return;
 
-    const wsUrl = API_BASE.replace(/^http/, "ws") + `/webrtc/ws/post-${id}`;
-    const ws = new WebSocket(wsUrl);
+    const base = API.defaults.baseURL.replace(/^http/, "ws");
+    const ws = new WebSocket(`${base}/webrtc/ws/post-${id}`);
 
     ws.onmessage = async (event) => {
       try {
@@ -60,14 +62,14 @@ const TranslatedPost = () => {
           await fetchComments();
         }
       } catch (err) {
-        console.error("WS error:", err);
+        console.error("WebSocket error:", err);
       }
     };
 
     return () => ws.close();
   }, [id]);
 
-  // --- Handle new comment submit (Optimistic UI) ---
+  /* ───────── ✍️ Handle Comment Submit ───────── */
   const handleSubmit = async () => {
     if (!newComment.trim()) return;
 
@@ -86,7 +88,7 @@ const TranslatedPost = () => {
     setNewComment("");
 
     try {
-      const res = await axios.post(`${API_BASE}/comment/`, {
+      const res = await API.post(`/comment/`, {
         post_id: Number(id),
         text: tempComment.original,
       });
@@ -107,6 +109,7 @@ const TranslatedPost = () => {
     }
   };
 
+  /* ───────── ⏳ Loading State ───────── */
   if (!post) {
     return (
       <PageWrapper>
@@ -125,6 +128,7 @@ const TranslatedPost = () => {
     );
   }
 
+  /* ───────── 🧩 Render UI ───────── */
   return (
     <PageWrapper>
       <motion.div
