@@ -1,7 +1,7 @@
 //src/pages/relationship/Advice.jsx
 
 import React, { useState, useRef, useEffect } from "react";
-import axios from "@/api";
+import API from "@/api"; // ✅ use API instance, not axios
 import { motion } from "framer-motion";
 import PageWrapper from "@/components/PageWrapper";
 import {
@@ -72,7 +72,7 @@ const Advice = () => {
     setAdvice("");
     setFollowUp("");
     try {
-      const res = await axios.post("/relationship/ai/advice", { query });
+      const res = await API.post("/relationship/ai/advice", { query });
       const newAdvice = res.data.advice || "No advice returned.";
       setAdvice(newAdvice);
 
@@ -81,7 +81,7 @@ const Advice = () => {
 
       // 📌 fetch follow-up question
       try {
-        const followRes = await axios.post("/relationship/ai/follow-up", {
+        const followRes = await API.post("/relationship/ai/follow-up", {
           advice: newAdvice,
         });
         setFollowUp(followRes.data.followup || "");
@@ -108,7 +108,7 @@ const Advice = () => {
     setToneError("");
     setToneResult("");
     try {
-      const res = await axios.post("/relationship/ai/sentiment", {
+      const res = await API.post("/relationship/ai/sentiment", {
         message: toneMsg,
       });
       setToneResult(res.data.tone || "No tone detected.");
