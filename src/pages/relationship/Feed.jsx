@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import axios from "@/api";
+import API from "@/api.jsx"; // ✅ use centralized Axios instance
 import PostCard from "@/components/PostCard";
 import PageWrapper from "@/components/PageWrapper";
 import { Dialog } from "@headlessui/react";
@@ -20,7 +20,7 @@ const Feed = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get(`/api/relationship/get-posts?lang=${i18n.language}`);
+        const res = await API.get(`/api/relationship/get-posts?lang=${i18n.language}`);
         setPosts(res.data);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
@@ -33,9 +33,9 @@ const Feed = () => {
   const handleLike = async (post_id, liked) => {
     try {
       if (liked) {
-        await axios.post("/api/relationship/unlike-post", { user_id: userId, post_id });
+        await API.post("/api/relationship/unlike-post", { user_id: userId, post_id });
       } else {
-        await axios.post("/api/relationship/like-post", { user_id: userId, post_id });
+        await API.post("/api/relationship/like-post", { user_id: userId, post_id });
       }
 
       setPosts((prev) =>
@@ -59,7 +59,7 @@ const Feed = () => {
   // 💾 Save post
   const handleSave = async (post_id) => {
     try {
-      await axios.post("/api/relationship/save-post", { user_id: userId, post_id });
+      await API.post("/api/relationship/save-post", { user_id: userId, post_id });
       alert("Post saved ✅");
     } catch (error) {
       console.error("Error saving post:", error);
@@ -69,7 +69,11 @@ const Feed = () => {
   // 📤 Share post
   const handleShare = async (post_id) => {
     try {
-      await axios.post("/api/relationship/share-post", { user_id: userId, post_id, platform: "general" });
+      await API.post("/api/relationship/share-post", {
+        user_id: userId,
+        post_id,
+        platform: "general",
+      });
       alert("Post shared ✅");
     } catch (error) {
       console.error("Error sharing post:", error);
@@ -87,7 +91,7 @@ const Feed = () => {
     if (voiceFile) formData.append("voice", voiceFile);
 
     try {
-      const res = await axios.post("/api/relationship/comment-post", formData, {
+      const res = await API.post("/api/relationship/comment-post", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
