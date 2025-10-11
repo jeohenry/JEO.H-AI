@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import axios from "@/api";
+import API from "@/api"; // ✅ Shared API import from first code
 import ChatBox from "@/components/ChatBox";
 import PageWrapper from "@/components/PageWrapper";
 import { useWebRTCChat } from "@/hooks/useWebRTCChat";
@@ -35,8 +35,7 @@ const ChatRoom = () => {
   useEffect(() => {
     if (!userId) return navigate("/relationship/login");
 
-    axios
-      .get(`/api/relationship/match/compatible/${userId}`)
+    API.get(`/api/relationship/match/compatible/${userId}`)
       .then((res) => setMatches(res.data.matches))
       .catch((err) => console.error("Error fetching matches:", err));
   }, [userId, navigate]);
